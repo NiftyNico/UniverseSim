@@ -195,7 +195,7 @@ void initGL()
 
 	//Create planets
 	for (int i = 0; i < NUM_PLANETS; i++){
-		Planet p(&planet, &texture0ID, &texture1ID, &texture2ID);
+		Planet p(&planet, &texture0ID, &texture1ID, &texture2ID, 0.00005f);
 		p.rotate(rand(), glm::vec3(1.0f, 0.0f, 0.0f));
 		p.rotate(rand(), glm::vec3(0.0f, 1.0f, 0.0f));
 		p.rotate(rand(), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -204,7 +204,7 @@ void initGL()
 			               	  rand() % SKY_BOUNDS - SKY_BOUNDS / 2));
 		planets.push_back(p);
 
-		Planet b(&cat, &texture4ID, &texture4ID, &texture4ID);
+		Planet b(&cat, &texture4ID, &texture4ID, &texture2ID, 0.00005f);
 		b.rotate(rand(), glm::vec3(1.0f, 0.0f, 0.0f));
 		b.rotate(rand(), glm::vec3(0.0f, 1.0f, 0.0f));
 		b.rotate(rand(), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -214,10 +214,10 @@ void initGL()
 		planets.push_back(b);
 	}
 
-	thePlane = new Planet(&plane, &texture3ID, &texture3ID, &texture3ID);
+	thePlane = new Planet(&plane, &texture3ID, &texture3ID, &texture3ID, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 	thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
-	thePlane->scale(glm::vec3(SKY_BOUNDS, SKY_BOUNDS, SKY_BOUNDS));
+	thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
 }
 
 void reshapeGL(int w, int h)
@@ -251,18 +251,6 @@ void drawGL()
 	camera.applyProjectionMatrix(&P);
 	MV.pushMatrix();
 	camera.applyViewMatrix(&MV);
-
-	glm::mat3 cloudMover(1.0);
-	//T.translate(glm::vec3(moveCloudsBy, 0.0f, 0.0f));	
-	cloudMover[0][0] = 1.0f;
-	cloudMover[0][1] = 0.0f;
-	cloudMover[0][2] = 0.0f;
-	cloudMover[1][0] = 0.0f;
-	cloudMover[1][1] = 1.0f;
-	cloudMover[1][2] = 0.0f;
-	cloudMover[2][0] = moveCloudsBy;
-	cloudMover[2][1] = 0.0f;
-	cloudMover[2][2] = 1.0f;
 
 	// Bind the program
 	glUseProgram(pid);
@@ -346,7 +334,8 @@ void keyboardGL(unsigned char key, int x, int y)
 void idleGL()
 {
 	//float t = glutGet(GLUT_ELAPSED_TIME);
-	moveCloudsBy += .00005;
+	Planet::setTime(glutGet(GLUT_ELAPSED_TIME));
+	//moveCloudsBy += .00005;
 	glutPostRedisplay();
 }
 

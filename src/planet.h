@@ -21,7 +21,9 @@ private:
     GLuint* coloring;
     GLuint* reflectivity;
     GLuint* atmosphere;
-    
+    glm::mat3 atmosPos;
+    float atmosPosModifier;
+
     Shape* shape;
     static MatrixStack* stack;
     static GLint* stackBind;
@@ -33,11 +35,15 @@ private:
     static GLint* vTexCoordsBind;
     static GLint* texTransBind;
 
+    static float time;
+
 public:
-    Planet(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere);
+    Planet(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier);
 
     static void setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
      GLint* vPosBind, GLint* vNormBind, GLint* vTexCoordsBind, GLint* texTransBind);
+
+    static void setTime(float time);
 
     void translate(glm::vec3 translateBy);
     void scale(glm::vec3 scaleBy);

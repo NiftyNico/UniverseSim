@@ -2,7 +2,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+universe
 
 # Precompiled Headers
 *.gch

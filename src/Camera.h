@@ -16,7 +16,7 @@
 #define SLOW_BY 0.05f
 #define PI 3.141592654f
 #define LOOK_SPEED 0.05f
-#define MOVE_SPEED 0.05f
+#define MOVE_SPEED 0.5f
 
 class MatrixStack;
 

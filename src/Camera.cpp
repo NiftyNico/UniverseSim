@@ -75,6 +75,12 @@ void Camera::movement(char c)
 		case 'd':
 			translations.x += MOVE_SPEED;
 			break;
+		case 'q':
+			translations.y -= MOVE_SPEED;
+			break;
+		case 'e':
+		    translations.y += MOVE_SPEED;
+		    break;
 	}
 }
 

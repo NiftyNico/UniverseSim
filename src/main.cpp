@@ -8,9 +8,11 @@
 #include <vector>
 #include "GLSL.h"
 #include "Camera.h"
+#include "Mass.h"
 #include "MatrixStack.h"
 #include "Image.h"
 #include "Shape.h"
+#include "Simulator.h"
 #include <stdio.h>
 
 #include "planet.h"
@@ -22,6 +24,7 @@
 
 using namespace std;
 
+int time0;
 Shape planet;
 Shape cat;
 Shape plane;
@@ -54,8 +57,11 @@ GLuint texture4ID;
 // Texture matrix
 glm::mat3 T(1.0);
 
-std::vector<Planet> planets;
+Planet *planetPlanet;
+Planet *catPlanet;
+
 Planet* thePlane;
+Simulator *simulator;
 
 string getShaderPath(string filename)
 {
@@ -193,31 +199,25 @@ void initGL()
 	// Check GLSL
 	GLSL::checkVersion();
 
-	//Create planets
-	for (int i = 0; i < NUM_PLANETS; i++){
-		Planet p(&planet, &texture0ID, &texture1ID, &texture2ID, 0.00005f);
-		p.rotate(rand(), glm::vec3(1.0f, 0.0f, 0.0f));
-		p.rotate(rand(), glm::vec3(0.0f, 1.0f, 0.0f));
-		p.rotate(rand(), glm::vec3(0.0f, 0.0f, 1.0f));
-		p.translate(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-			                  rand() % SKY_BOUNDS + 2.0f, 
-			               	  rand() % SKY_BOUNDS - SKY_BOUNDS / 2));
-		planets.push_back(p);
+	simulator = new Simulator();
 
-		Planet b(&cat, &texture4ID, &texture4ID, &texture2ID, 0.00005f);
-		b.rotate(rand(), glm::vec3(1.0f, 0.0f, 0.0f));
-		b.rotate(rand(), glm::vec3(0.0f, 1.0f, 0.0f));
-		b.rotate(rand(), glm::vec3(0.0f, 0.0f, 1.0f));
-		b.translate(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-			                  rand() % SKY_BOUNDS + 2.0f, 
-			               	  rand() % SKY_BOUNDS - SKY_BOUNDS / 2));
-		planets.push_back(b);
+	//Create planets
+	for (int i = 0; i < NUM_PLANETS; i++) {
+		simulator->addMass(new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
+		 	                                   rand() % SKY_BOUNDS + 2.0f, 
+		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 5)));
 	}
 
 	thePlane = new Planet(&plane, &texture3ID, &texture3ID, &texture3ID, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 	thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
 	thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
+
+	planetPlanet = new Planet(&planet, &texture0ID, &texture1ID, &texture2ID, 0.00005f);
+
+	catPlanet = new Planet(&cat, &texture4ID, &texture4ID, &texture2ID, 0.00005f);
+
+	// simulator->start();
 }
 
 void reshapeGL(int w, int h)
@@ -258,14 +258,20 @@ void drawGL()
 	glUniformMatrix4fv(h_MV, 1, GL_FALSE, glm::value_ptr(MV.topMatrix()));
 	glUniform3fv(h_lightPosCam, 1, glm::value_ptr(lightPosCam));
 	
-
 	Planet::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
      &h_vertPosition, &h_vertNormal, &h_vertTexCoords, &h_T);
 
 	thePlane->draw();
 
-    for(std::vector<Planet>::iterator it = planets.begin(); it != planets.end(); it++)
-    	it->draw();
+	simulator->pause();
+	std::vector<Mass*> *masses = simulator->getMasses();
+	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
+		planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+	}
+	simulator->resume();
+
+   // for(std::vector<Planet>::iterator it = planets.begin(); it != planets.end(); it++)
+   // 	it->draw();
 
 	// Unbind the program
 	glUseProgram(0);
@@ -333,10 +339,14 @@ void keyboardGL(unsigned char key, int x, int y)
 
 void idleGL()
 {
-	//float t = glutGet(GLUT_ELAPSED_TIME);
-	Planet::setTime(glutGet(GLUT_ELAPSED_TIME));
-	//moveCloudsBy += .00005;
-	glutPostRedisplay();
+	int time1 = glutGet(GLUT_ELAPSED_TIME);
+	int dt = time1 - time0;
+	// Update every 60Hz
+	if(dt > 1000.0/60.0) {
+		time0 = time1;
+		Planet::setTime(time1);
+		glutPostRedisplay();
+	}
 }
 
 int main(int argc, char **argv)
@@ -344,7 +354,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitWindowSize(WINDOW_DIM, WINDOW_DIM);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutCreateWindow("Nicolas Higuera");
+	glutCreateWindow("Donovan McKelvey & Nicolas Higuera");
 	glutMouseFunc(mouseGL);
 	glutMotionFunc(motionGL);
     glutPassiveMotionFunc(glutPassiveMotionGL);

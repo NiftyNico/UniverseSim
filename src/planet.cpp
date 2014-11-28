@@ -97,5 +97,41 @@ void Planet::draw() {
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     stack->popMatrix();
+}
 
+void Planet::draw(glm::vec3 pos, float r) {
+    stack->pushMatrix();
+    stack->translate(pos);
+    stack->scale(glm::vec3(r));
+
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D, *coloring);
+    glUniform1i(*colorBind, 0);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, *reflectivity);
+    glUniform1i(*reflectBind, 1);
+    glActiveTexture(GL_TEXTURE0 + 2);
+    glBindTexture(GL_TEXTURE_2D, *atmosphere);
+    glUniform1i(*atmosBind, 2);
+
+    atmosPos[2][0] = atmosPosModifier * time;
+
+    // Texture matrix
+    // We're sending in GL_TRUE for the transpose argument, because we want
+    // the translation to be the right-most column instead of the bottom row.
+    glUniformMatrix3fv(*texTransBind, 1, GL_FALSE, glm::value_ptr(atmosPos));
+
+    glUniformMatrix4fv(*stackBind, 1, GL_FALSE, glm::value_ptr(stack->topMatrix()));
+
+    // Draw shape
+    shape->draw(*vPosBind, *vNormBind, *vTexCoordsBind);
+    
+    // Unbind textures
+    glActiveTexture(GL_TEXTURE0 + 2);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    stack->popMatrix();
 }

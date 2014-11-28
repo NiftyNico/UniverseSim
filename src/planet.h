@@ -50,6 +50,8 @@ public:
     void rotate(float angle, glm::vec3 rotateVec);
 
    	void draw();
+
+    void draw(glm::vec3 pos, float r);
 };
 
 #endif

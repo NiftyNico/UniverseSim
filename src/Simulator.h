@@ -19,10 +19,12 @@ typedef struct {
    std::vector<Mass*> *masses;
    pthread_mutex_t *mut;
    bool running;
+   float *curTime;
 } thread_arg_t;
 
 class Simulator {
 private:
+   float curTime;
    std::vector<Mass*> masses;
    pthread_t thread;
    pthread_mutex_t mut;

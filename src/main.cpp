@@ -17,10 +17,12 @@
 
 #include "planet.h"
 
+#include "glm/gtx/string_cast.hpp"
+
 #define UNDEFINED -1
-#define NUM_PLANETS 10000
+#define NUM_PLANETS 100
 #define WINDOW_DIM 800
-#define SKY_BOUNDS 100
+#define SKY_BOUNDS 200
 
 using namespace std;
 
@@ -217,7 +219,7 @@ void initGL()
 
 	catPlanet = new Planet(&cat, &texture4ID, &texture4ID, &texture2ID, 0.00005f);
 
-	// simulator->start();
+	simulator->start();
 }
 
 void reshapeGL(int w, int h)
@@ -267,6 +269,7 @@ void drawGL()
 	std::vector<Mass*> *masses = simulator->getMasses();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
 		planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+		// cout<<glm::to_string((*it)->getVelocity())<<endl;
 	}
 	simulator->resume();
 

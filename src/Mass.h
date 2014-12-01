@@ -22,15 +22,15 @@ private:
 public:
    Mass(glm::vec3 position, float radius);
 
-   Mass(glm::vec3 position, glm::vec3 velocity, float mass);
+   Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime);
 
-   float getRadius();
+   float getRadius() const;
 
-   float getMass();
+   float getMass() const;
 
-   glm::vec3 getPosition();
+   glm::vec3 getPosition() const;
 
-   glm::vec3 getVelocity();
+   glm::vec3 getVelocity() const;
 
    float squaredDist(const Mass &other) const;
 

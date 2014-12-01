@@ -6,29 +6,31 @@ Mass::Mass(glm::vec3 position, float radius) {
    this->acceleration = glm::vec3(0.0f);
    this->mass = 4.0 * M_PI * radius * radius * radius / 3.0;
    this->radius = radius;
+   curTime = 0.0f;
 }
 
-Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass) {
+Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
    this->position = position;
    this->velocity = velocity;
    this->acceleration = glm::vec3(0.0f);
    this->mass = mass;
    this->radius = std::pow(3.0 * mass / (4.0 * M_PI), 1/3.);
+   this->curTime = curTime;
 }
 
-float Mass::getRadius() {
+float Mass::getRadius() const {
    return radius;
 }
 
-float Mass::getMass() {
+float Mass::getMass() const {
    return mass;
 }
 
-glm::vec3 Mass::getPosition() {
+glm::vec3 Mass::getPosition() const {
    return position;
 }
 
-glm::vec3 Mass::getVelocity() {
+glm::vec3 Mass::getVelocity() const {
    return velocity;
 }
 

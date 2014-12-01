@@ -20,9 +20,9 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 100
+#define NUM_PLANETS 1000
 #define WINDOW_DIM 800
-#define SKY_BOUNDS 200
+#define SKY_BOUNDS 800
 
 using namespace std;
 

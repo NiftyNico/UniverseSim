@@ -15,16 +15,71 @@ static float getTime() {
    return tp.tv_sec - firstTime + tp.tv_usec / 1000000.0f;
 }
 
+static int getIndex(thread_mass_arg_t *args) {
+   pthread_mutex_lock(args->posMut);
+   int ndx = args->pos++;
+   pthread_mutex_unlock(args->posMut);
+   return ndx;
+}
+
+void *updateMass(void *p) {
+   thread_mass_arg_t *args = (thread_mass_arg_t*) p;
+   std::vector<Mass*> *masses = args->masses;
+
+   while (args->running) {
+      pthread_barrier_wait(args->startBarrier);
+      const int count = masses->size();
+
+      int ndx = getIndex(args);
+      while (ndx < count) {
+         Mass *i = masses->at(ndx);
+         for (int ndx2 = ndx + 1; ndx2 < count; ++ndx2) {
+            Mass *j = masses->at(ndx2);
+
+            float force = G * i->getMass() * j->getMass() / i->squaredDist(*j);
+            glm::vec3 direction = i->getDirection(*j);
+            j->addForce(force, direction);
+            i->addForce(-force, direction);
+         }
+
+         ndx = getIndex(args);
+      }
+
+      pthread_barrier_wait(args->endBarrier);
+   }
+
+   return NULL;
+}
+
 void *update(void *p) {
    thread_arg_t *args = (thread_arg_t*) p;
    std::vector<Mass*> *masses = args->masses;
-   float curTime = *(args->curTime);
 
-   if (curTime == 0.0f) {
-      curTime = getTime();
+   pthread_t threads[NUM_THREADS];
+   pthread_barrier_t startBarrier;
+   pthread_barrier_t endBarrier;
+   pthread_mutex_t posMut;
+
+   pthread_barrier_init(&startBarrier, NULL, NUM_THREADS + 1);
+   pthread_barrier_init(&endBarrier, NULL, NUM_THREADS + 1);
+   pthread_mutex_init(&posMut, NULL);
+
+   if (args->curTime == 0.0f) {
+      args->curTime = getTime();
       for (std::vector<Mass*>::iterator iter = masses->begin(); iter != masses->end(); ++iter) {
-         (*iter)->stepTime(curTime);
+         (*iter)->stepTime(args->curTime);
       }
+   }
+
+   thread_mass_arg_t tArgs;
+   tArgs.running = true;
+   tArgs.startBarrier = &startBarrier;
+   tArgs.endBarrier = &endBarrier;
+   tArgs.posMut = &posMut;
+   tArgs.masses = args->masses;
+
+   for (int i = 0; i < NUM_THREADS; i++) {
+      pthread_create(threads + i, NULL, updateMass, (void *) &tArgs);
    }
 
    while (args->running) {
@@ -37,13 +92,12 @@ void *update(void *p) {
             for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
                float d = (*i)->getRadius() + (*j)->getRadius();
                if ((*i)->squaredDist(**j) <= d*d) {
-                  Mass *combined = new Mass(0.5f * ((*i)->getPosition() + (*j)->getPosition()), ((*i)->getMass() * (*i)->getVelocity() + (*j)->getMass() * (*j)->getVelocity()) / (*i)->getMass() + (*j)->getMass(), (*i)->getMass() + (*j)->getMass(), curTime);
+                  Mass *combined = new Mass(0.5f * ((*i)->getPosition() + (*j)->getPosition()), ((*i)->getMass() * (*i)->getVelocity() + (*j)->getMass() * (*j)->getVelocity()) / (*i)->getMass() + (*j)->getMass(), (*i)->getMass() + (*j)->getMass(), args->curTime);
                   masses->at(i - masses->begin()) = combined;
                   masses->at(j - masses->begin()) = masses->back();
                   masses->pop_back();
 
                   change = true;
-                  //i = j = masses->end();
                   goto endloop;
                }
             }
@@ -52,35 +106,36 @@ void *update(void *p) {
          ; // there needs to be a statement here
       }
 
-      for (std::vector<Mass*>::iterator i = masses->begin(); i != masses->end(); ++i) {
-         for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
-            float force = G * (*i)->getMass() * (*j)->getMass() / (*i)->squaredDist(**j);
-            glm::vec3 direction = (*i)->getDirection(**j);
-            (*j)->addForce(force, direction);
-            (*i)->addForce(-force, direction);
-         }
-      }
+      tArgs.pos = 0;
+      pthread_barrier_wait(&startBarrier);
+      pthread_barrier_wait(&endBarrier);
 
-      curTime = getTime();
-      *(args->curTime) = curTime;
+      args->curTime = getTime();
 
       for (std::vector<Mass*>::iterator iter = masses->begin(); iter != masses->end(); ++iter) {
-         (*iter)->stepTime(curTime);
+         (*iter)->stepTime(args->curTime);
       }
 
       pthread_mutex_unlock(args->mut);
+   }
+   tArgs.running = false;
+   pthread_barrier_destroy(&startBarrier);
+   pthread_barrier_destroy(&endBarrier);
+   pthread_mutex_destroy(&posMut);
+
+   for (int i = 0; i < NUM_THREADS; i++) {
+      pthread_join(threads[i], NULL);
    }
 
    return NULL;
 }
 
 Simulator::Simulator() {
-   curTime = 0.0f;
    pthread_mutex_init(&mut, NULL);
    threadArgs.masses = &masses;
    threadArgs.mut = &mut;
    threadArgs.running = true;
-   threadArgs.curTime = &curTime;
+   threadArgs.curTime = 0.0f;
 }
 
 Simulator::~Simulator() {

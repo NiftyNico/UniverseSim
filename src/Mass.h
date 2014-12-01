@@ -10,6 +10,8 @@
 #include "GLSL.h"
 #include "MatrixStack.h"
 
+#include <pthread.h>
+
 class Mass {
 private:
    float curTime;
@@ -18,11 +20,14 @@ private:
    glm::vec3 position;
    glm::vec3 velocity;
    glm::vec3 acceleration;
+   pthread_mutex_t mut;
 
 public:
    Mass(glm::vec3 position, float radius);
 
    Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime);
+
+   ~Mass();
 
    float getRadius() const;
 

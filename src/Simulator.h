@@ -3,6 +3,7 @@
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
+#include "pthread-barrier.h"
 #endif
 #ifdef __unix__
 #include <GL/glut.h>
@@ -15,16 +16,26 @@
 #include <pthread.h>
 #include <vector>
 
+#define NUM_THREADS 8
+
 typedef struct {
    std::vector<Mass*> *masses;
    pthread_mutex_t *mut;
    bool running;
-   float *curTime;
+   float curTime;
 } thread_arg_t;
+
+typedef struct {
+   bool running;
+   pthread_barrier_t *startBarrier;
+   pthread_barrier_t *endBarrier;
+   pthread_mutex_t *posMut;
+   std::vector<Mass*> *masses;
+   int pos;
+} thread_mass_arg_t;
 
 class Simulator {
 private:
-   float curTime;
    std::vector<Mass*> masses;
    pthread_t thread;
    pthread_mutex_t mut;

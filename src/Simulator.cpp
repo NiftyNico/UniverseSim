@@ -92,10 +92,27 @@ void *update(void *p) {
             for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
                float d = (*i)->getRadius() + (*j)->getRadius();
                if ((*i)->squaredDist(**j) <= d*d) {
-                  Mass *combined = new Mass(0.5f * ((*i)->getPosition() + (*j)->getPosition()), ((*i)->getMass() * (*i)->getVelocity() + (*j)->getMass() * (*j)->getVelocity()) / (*i)->getMass() + (*j)->getMass(), (*i)->getMass() + (*j)->getMass(), args->curTime);
-                  masses->at(i - masses->begin()) = combined;
-                  masses->at(j - masses->begin()) = masses->back();
-                  masses->pop_back();
+
+                  float m_t = (*i)->getMass() + (*j)->getMass();
+                  float p1 = (*i)->getMass() / m_t;
+                  float p2 = (*j)->getMass() / m_t;
+
+                  Mass *combined = new Mass(p1 * (*i)->getPosition() + p2 * (*j)->getPosition(),
+                                            p1 * (*i)->getVelocity() + p2 * (*j)->getVelocity(),
+                                            m_t,
+                                            args->curTime);
+
+                  // don't worry about optimizing the vector removal anymore...
+                  //Mass *combined = new Mass(0.5f * ((*i)->getPosition() + (*j)->getPosition()), ((*i)->getMass() * (*i)->getVelocity() + (*j)->getMass() * (*j)->getVelocity()) / (*i)->getMass() + (*j)->getMass(), (*i)->getMass() + (*j)->getMass(), args->curTime);
+                  //masses->at(i - masses->begin()) = combined;
+                  //masses->at(j - masses->begin()) = masses->back();
+                  //masses->pop_back();
+
+                  delete *i;
+                  delete *j;
+                  masses->erase(j);
+                  masses->erase(i);
+                  masses->push_back(combined);
 
                   change = true;
                   goto endloop;

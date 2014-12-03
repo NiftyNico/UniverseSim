@@ -116,5 +116,6 @@ void Camera::calcNormal() {
 }
 
 bool Camera::inView(const glm::vec3 &pos) const {
-	return glm::dot(pos - translations, normal) <= 0;
+	glm::vec3 dist = pos - translations;
+	return glm::dot(dist, normal) <= 0 && glm::dot(dist, dist) <= 500 * 500;
 }

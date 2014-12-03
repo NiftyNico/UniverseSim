@@ -43,7 +43,7 @@ public:
 
    void addForce(float force, glm::vec3 direction);
 
-   void stepTime(long newTime);
+   void stepTime(float newTime);
 };
 
 #endif

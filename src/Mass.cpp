@@ -55,7 +55,7 @@ void Mass::addForce(float force, glm::vec3 direction) {
    pthread_mutex_unlock(&mut);
 }
 
-void Mass::stepTime(long newTime) {
+void Mass::stepTime(float newTime) {
    float dt = newTime - curTime;
    position += velocity * dt + 0.5f * acceleration * dt * dt;
    velocity += dt * acceleration;

@@ -20,9 +20,9 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 1000
+#define NUM_PLANETS 2000
 #define WINDOW_DIM 800
-#define SKY_BOUNDS 800
+#define SKY_BOUNDS 2000
 
 using namespace std;
 
@@ -207,10 +207,10 @@ void initGL()
 	for (int i = 0; i < NUM_PLANETS; i++) {
 		simulator->addMass(new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
 		 	                                   rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 5)));
+		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
 	}
 
-	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 20));
+	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
 	thePlane = new Planet(&plane, &texture3ID, &texture3ID, &texture3ID, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -268,9 +268,12 @@ void drawGL()
 	thePlane->draw();
 
 	simulator->pause();
+	camera.calcNormal();
 	std::vector<Mass*> *masses = simulator->getMasses();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
-		planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+		if (camera.inView((*it)->getPosition())) {
+			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+		}
 		// cout<<glm::to_string((*it)->getVelocity())<<endl;
 	}
 	simulator->resume();

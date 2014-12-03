@@ -16,7 +16,7 @@
 #include <pthread.h>
 #include <vector>
 
-#define NUM_THREADS 8
+#define NUM_THREADS 16
 
 typedef struct {
    std::vector<Mass*> *masses;

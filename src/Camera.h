@@ -42,6 +42,8 @@ public:
 	void applyViewMatrix(MatrixStack *MV) const;
 	void movement(char c);
 	void passiveMouseMoved(int x, int y);
+	void calcNormal();
+	bool inView(const glm::vec3 &pos) const;
 private:
 	float aspect;
 	float fovy;
@@ -60,6 +62,8 @@ private:
 	float xPos, yPos, zPos;
 	float lastX, lastY;
 	float xRot, yRot;
+
+	glm::vec3 normal;
 };
 
 #endif

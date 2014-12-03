@@ -108,6 +108,8 @@ void *update(void *p) {
                   //masses->at(j - masses->begin()) = masses->back();
                   //masses->pop_back();
 
+                  std::vector<Mass*>::iterator last = i - 1;
+
                   delete *i;
                   delete *j;
                   masses->erase(j);
@@ -115,7 +117,10 @@ void *update(void *p) {
                   masses->push_back(combined);
 
                   change = true;
-                  goto endloop;
+
+                  i = last;
+                  break;
+                  //goto endloop;
                }
             }
          }

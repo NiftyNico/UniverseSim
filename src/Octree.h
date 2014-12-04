@@ -29,6 +29,7 @@ private:
    glm::vec3 low;
    glm::vec3 high;
    glm::vec3 middle;
+   float width;
 
    glm::vec3 centerOfMass;
    float totalMass;
@@ -61,6 +62,8 @@ public:
    Octree* getChild(int ndx) const;
 
    const Octree* getParent() const;
+
+   float getWidth() const;
 };
 
 class OctreeIterator {

@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#define THETA 0.5f
+
 int main() {
    Octree tree(glm::vec3(0.0f), glm::vec3(100.0f));
 
@@ -18,7 +20,36 @@ int main() {
 
    OctreeIterator iter(&tree);
    while (! iter.atEnd()) {
-      std::cout << iter.get()->isLeaf() << "\t" << glm::to_string(iter.get()->getCOM()) << std::endl;
+      const Octree *o = iter.get();
+      if (o->isLeaf()) {
+         std::cout << "Calculating force for " << glm::to_string(iter.get()->getCOM()) << std::endl;
+
+         OctreeIterator iter2(&tree);
+         while (! iter2.atEnd()) {
+            const Octree *t = iter2.get();
+
+            if (o == t) {
+               iter2.next();
+            } else if (t->isLeaf()) {
+               std::cout << "Adding force from leaf  " << glm::to_string(t->getCOM()) << std::endl;
+               iter2.next();
+            } else {
+               float s = t->getWidth();
+               glm::vec3 dist = o->getCOM() - t->getCOM();
+
+               // if width / distance > THETA -> width*width / distance*distance > THETA * THETA
+               if (s*s / glm::dot(dist, dist) > THETA*THETA) {
+                  iter2.next();
+               } else {
+                  std::cout << "Adding force from group " << glm::to_string(t->getCOM()) << std::endl;
+                  iter2.nextSkipChildren();
+               }
+            }   
+         }
+
+         std::cout << std::endl;
+      }
+
       iter.next();
    }
 }

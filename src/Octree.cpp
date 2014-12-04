@@ -8,7 +8,8 @@ Octree::Octree(const glm::vec3 &low, const glm::vec3 &high) {
 
    this->low = low;
    this->high = high;
-   this->middle = 0.5f * low + 0.5f * high;
+   middle = 0.5f * low + 0.5f * high;
+   width = std::min(high.x - low.x, std::min(high.y - low.y, high.z - low.z));
 
    centerOfMass = glm::vec3(0.0f);
    totalMass = 0.0f;
@@ -22,7 +23,8 @@ Octree::Octree(const glm::vec3 &low, const glm::vec3 &high, const Octree *parent
 
    this->low = low;
    this->high = high;
-   this->middle = 0.5f * low + 0.5f * high;
+   middle = 0.5f * low + 0.5f * high;
+   width = std::min(high.x - low.x, std::min(high.y - low.y, high.z - low.z));
 
    centerOfMass = glm::vec3(0.0f);
    totalMass = 0.0f;
@@ -137,6 +139,10 @@ Octree* Octree::getChild(int ndx) const {
 
 const Octree* Octree::getParent() const {
    return parent;
+}
+
+float Octree::getWidth() const {
+   return width;
 }
 
 OctreeIterator::OctreeIterator(const Octree *tree) {

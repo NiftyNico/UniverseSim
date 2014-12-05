@@ -7,7 +7,6 @@ Mass::Mass(glm::vec3 position, float radius) {
    this->mass = 4.0 * M_PI * radius * radius * radius / 3.0;
    this->radius = radius;
    curTime = 0.0f;
-   pthread_mutex_init(&mut, NULL);
 }
 
 Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
@@ -17,11 +16,6 @@ Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
    this->mass = mass;
    this->radius = std::pow(3.0 * mass / (4.0 * M_PI), 1/3.);
    this->curTime = curTime;
-   pthread_mutex_init(&mut, NULL);
-}
-
-Mass::~Mass() {
-   pthread_mutex_destroy(&mut);
 }
 
 float Mass::getRadius() const {
@@ -50,9 +44,7 @@ glm::vec3 Mass::getDirection(const Mass &other) const {
 }
 
 void Mass::addForce(float force, glm::vec3 direction) {
-   pthread_mutex_lock(&mut);
    acceleration += force / mass * direction;
-   pthread_mutex_unlock(&mut);
 }
 
 void Mass::stepTime(float newTime) {

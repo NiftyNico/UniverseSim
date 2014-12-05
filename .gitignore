@@ -29,3 +29,4 @@ ot
 *.app
 
 .DS_Store
+*.dSYM

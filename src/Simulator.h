@@ -11,6 +11,7 @@
 #include "GLSL.h"
 #include "MatrixStack.h"
 
+#include "BoxList.h"
 #include "Mass.h"
 #include "Octree.h"
 
@@ -24,6 +25,7 @@ typedef struct {
    pthread_mutex_t *mut;
    bool running;
    float curTime;
+   BoxNode *treeList;
 } thread_arg_t;
 
 typedef struct {
@@ -67,6 +69,8 @@ public:
    void resume();
 
    void stop();
+
+   BoxNode *getOctree();
 };
 
 #endif

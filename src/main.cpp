@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include "GLSL.h"
+#include "BoxList.h"
 #include "Camera.h"
 #include "Mass.h"
 #include "MatrixStack.h"
@@ -20,7 +21,7 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 5000
+#define NUM_PLANETS 10000
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 2000
 
@@ -33,6 +34,7 @@ Shape plane;
 Camera camera(WINDOW_DIM);
 bool cull = false;
 bool line = false;
+bool tree = false;
 glm::vec3 lightPosCam;
 
 static float moveCloudsBy = 0;
@@ -270,19 +272,55 @@ void drawGL()
 	simulator->pause();
 	camera.calcNormal();
 	std::vector<Mass*> *masses = simulator->getMasses();
+	BoxNode *boxes = simulator->getOctree();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
 		if (camera.inView((*it)->getPosition())) {
 			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
 		}
-		// cout<<glm::to_string((*it)->getVelocity())<<endl;
 	}
-	simulator->resume();
-
-   // for(std::vector<Planet>::iterator it = planets.begin(); it != planets.end(); it++)
-   // 	it->draw();
 
 	// Unbind the program
 	glUseProgram(0);
+	
+	if (tree) {
+		BoxNode *tmp = boxes;
+
+		glColor3f(1.0f, 1.0f, 1.0f);
+		while (tmp) {
+			glBegin(GL_LINE_LOOP);
+				glVertex3f(tmp->low.x,  tmp->low.y,  tmp->low.z);
+				glVertex3f(tmp->high.x, tmp->low.y,  tmp->low.z);
+				glVertex3f(tmp->high.x, tmp->high.y, tmp->low.z);
+				glVertex3f(tmp->low.x,  tmp->high.y, tmp->low.z);
+			glEnd();
+
+			glBegin(GL_LINE_LOOP);
+				glVertex3f(tmp->low.x,  tmp->low.y,  tmp->high.z);
+				glVertex3f(tmp->high.x, tmp->low.y,  tmp->high.z);
+				glVertex3f(tmp->high.x, tmp->high.y, tmp->high.z);
+				glVertex3f(tmp->low.x,  tmp->high.y, tmp->high.z);
+			glEnd();
+
+			glBegin(GL_LINE);
+				glVertex3f(tmp->low.x, tmp->low.y, tmp->low.z);
+				glVertex3f(tmp->low.x, tmp->low.y, tmp->high.z);
+
+				glVertex3f(tmp->high.x, tmp->low.y, tmp->low.z);
+				glVertex3f(tmp->high.x, tmp->low.y, tmp->high.z);
+
+				glVertex3f(tmp->high.x, tmp->high.y, tmp->low.z);
+				glVertex3f(tmp->high.x, tmp->high.y, tmp->high.z);
+
+				glVertex3f(tmp->low.x, tmp->high.y, tmp->low.z);
+				glVertex3f(tmp->low.x, tmp->high.y, tmp->high.z);
+			glEnd();
+
+			tmp = tmp->next;
+		}
+	}
+
+	freeList(boxes);
+	simulator->resume();
 
 	// Pop stacks
 	MV.popMatrix();
@@ -325,6 +363,9 @@ void keyboardGL(unsigned char key, int x, int y)
 			break;
 		case 'l':
 			line = !line;
+			break;
+		case 't':
+			tree = !tree;
 			break;
 		case 'x':
 			lightPosCam.x += 0.1;

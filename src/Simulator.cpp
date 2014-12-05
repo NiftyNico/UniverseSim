@@ -216,6 +216,10 @@ void *update(void *p) {
       bArgs.iter = new OctreeIterator(bArgs.tree);
 
       pthread_barrier_wait(&startBarrier);
+      if (args->treeList) {
+         freeList(args->treeList);
+      }
+      args->treeList = bArgs.tree->getLeafList();
       pthread_barrier_wait(&endBarrier);
 
       delete bArgs.iter;
@@ -248,6 +252,7 @@ Simulator::Simulator() {
    threadArgs.mut = &mut;
    threadArgs.running = true;
    threadArgs.curTime = 0.0f;
+   threadArgs.treeList = NULL;
 }
 
 Simulator::~Simulator() {
@@ -277,4 +282,10 @@ void Simulator::resume() {
 void Simulator::stop() {
    threadArgs.running = false;
    pthread_join(thread, NULL);
+}
+
+BoxNode* Simulator::getOctree() {
+   BoxNode *l = threadArgs.treeList;
+   threadArgs.treeList = NULL;
+   return l;
 }

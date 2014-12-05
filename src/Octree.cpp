@@ -151,6 +151,31 @@ void Octree::addForce(float force, glm::vec3 direction) const {
    }
 }
 
+BoxNode* Octree::getLeafList() const {
+   BoxNode *list = NULL;
+   BoxNode *last = NULL;
+   BoxNode *curr = NULL;
+   OctreeIterator iter(this);
+
+   while (! iter.atEnd()) {
+      if (iter.get()->isLeaf()) {
+         curr = getNode(iter.get()->low, iter.get()->high);
+
+         if (last) {
+            last->next = curr;
+         } else {
+            list = curr;
+         }
+
+         last = curr;
+      }
+
+      iter.next();
+   }
+
+   return list;
+}
+
 OctreeIterator::OctreeIterator(const Octree *tree) {
    current = tree;
    currentIndex = -1;

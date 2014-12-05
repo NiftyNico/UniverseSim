@@ -1,6 +1,7 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
+#include "BoxList.h"
 #include "Mass.h"
 
 #include <stack>
@@ -66,6 +67,8 @@ public:
    float getWidth() const;
 
    void addForce(float force, glm::vec3 direction) const;
+
+   BoxNode *getLeafList() const;
 };
 
 class OctreeIterator {

@@ -2,6 +2,13 @@
 
 const float Octree::THETA = 0.5f;
 
+// http://stackoverflow.com/a/13717283/3598299
+static bool overlaps(glm::vec3 l1, glm::vec3 h1, glm::vec3 l2, glm::vec3 h2) {
+   return std::max(l1.x, l2.x) <= std::min(h1.x, h2.x) &&
+          std::max(l1.y, l2.y) <= std::min(h1.y, h2.y) &&
+          std::max(l1.z, l2.z) <= std::min(h1.z, h2.z);
+}
+
 Octree::Octree(const glm::vec3 &low, const glm::vec3 &high) {
    children = NULL;
    parent = NULL;
@@ -174,6 +181,56 @@ BoxNode* Octree::getLeafList() const {
    }
 
    return list;
+}
+
+void Octree::removeMass(Mass *m) {
+   if (mass != m) {
+      int child = pickChild(m->getPosition());
+      if (children && children[child]) {
+         bool last = children[child]->mass = m;
+         children[child]->removeMass(m);
+         if (last) {
+            delete children[child];
+            children[child] = NULL;
+         }
+      }
+   } else {
+      mass = NULL;
+      float mMass = m->getMass();
+      Octree *o = this;
+      while (o) {
+         totalMass -= mMass;
+         centerOfMass -= m->getPosition() * m->getMass();
+         o = (Octree*) o->parent;
+      }
+   }
+}
+
+Mass* Octree::findCollsion(Mass *m, float maxRadius) const {
+   float d = m->getRadius() + maxRadius;
+   glm::vec3 p = m->getPosition();
+   glm::vec3 l(p.x - d, p.y - d, p.z - d);
+   glm::vec3 h(p.x + d, p.y + d, p.z + d);
+   OctreeIterator iter(this);
+
+   while (! iter.atEnd()) {
+      const Octree *o = iter.get();
+
+      if (o->mass == m) {
+         iter.next();
+      } else if (overlaps(l, h, o->low, o->high)) {
+         if (o->isLeaf()) {
+            if (m->squaredDist(*(o->mass)) <= d*d) {
+               return o->mass;
+            }
+         }
+         iter.next();
+      } else {
+         iter.nextSkipChildren();
+      }
+   }
+
+   return NULL;
 }
 
 OctreeIterator::OctreeIterator(const Octree *tree) {

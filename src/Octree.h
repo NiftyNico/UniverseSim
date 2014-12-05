@@ -69,6 +69,10 @@ public:
    void addForce(float force, glm::vec3 direction) const;
 
    BoxNode *getLeafList() const;
+
+   void removeMass(Mass *m);
+
+   Mass* findCollsion(Mass *m, float maxRadius) const;
 };
 
 class OctreeIterator {

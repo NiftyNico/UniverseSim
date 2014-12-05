@@ -86,7 +86,7 @@ int Octree::pickChild(const glm::vec3 &pos) const {
    return child;
 }
 
-void Octree::insertChild(const Mass *m) {
+void Octree::insertChild(Mass *m) {
    int child = pickChild(m->getPosition());
    if (! children[child]) {
       children[child] = makeChild(child);
@@ -94,7 +94,7 @@ void Octree::insertChild(const Mass *m) {
    children[child]->addMass(m);
 }
 
-void Octree::addMass(const Mass *m) {
+void Octree::addMass(Mass *m) {
    totalMass += m->getMass();
    centerOfMass += m->getMass() * m->getPosition();
 
@@ -103,7 +103,7 @@ void Octree::addMass(const Mass *m) {
    } else if (children) {
       insertChild(m);
    } else {
-      children = new Octree*[TOT];
+      children = new Octree*[TOT]();
       insertChild(mass);
       insertChild(m);
       mass = NULL;
@@ -143,6 +143,12 @@ const Octree* Octree::getParent() const {
 
 float Octree::getWidth() const {
    return width;
+}
+
+void Octree::addForce(float force, glm::vec3 direction) const {
+   if (mass) {
+      mass->addForce(force, direction);
+   }
 }
 
 OctreeIterator::OctreeIterator(const Octree *tree) {

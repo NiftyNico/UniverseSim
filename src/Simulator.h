@@ -12,6 +12,7 @@
 #include "MatrixStack.h"
 
 #include "Mass.h"
+#include "Octree.h"
 
 #include <pthread.h>
 #include <vector>
@@ -33,6 +34,15 @@ typedef struct {
    std::vector<Mass*> *masses;
    int pos;
 } thread_mass_arg_t;
+
+typedef struct {
+   bool running;
+   pthread_barrier_t *startBarrier;
+   pthread_barrier_t *endBarrier;
+   pthread_mutex_t *posMut;
+   Octree *tree;
+   OctreeIterator *iter;
+} barnes_hut_t;
 
 class Simulator {
 private:

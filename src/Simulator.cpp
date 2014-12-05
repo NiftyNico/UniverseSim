@@ -1,8 +1,10 @@
 #include "Simulator.h"
 
 #include <sys/time.h>
+#include <limits>
 
 #define G 6.67384E-2//11
+#define THETA 0.5
 
 static time_t firstTime = 0;
 
@@ -20,6 +22,24 @@ static int getIndex(thread_mass_arg_t *args) {
    int ndx = args->pos++;
    pthread_mutex_unlock(args->posMut);
    return ndx;
+}
+
+static const Octree* getTree(barnes_hut_t *args) {
+   const Octree *tree = NULL;
+   pthread_mutex_lock(args->posMut);
+
+   while (! args->iter->atEnd()) {
+      const Octree *tmp = args->iter->get();
+      args->iter->next();
+
+      if (tmp->isLeaf()) {
+         tree = tmp;
+         break;
+      }
+   }
+
+   pthread_mutex_unlock(args->posMut);
+   return tree;
 }
 
 void *updateMass(void *p) {
@@ -51,6 +71,52 @@ void *updateMass(void *p) {
    return NULL;
 }
 
+void *updateBarnesHut(void *p) {
+   barnes_hut_t *args = (barnes_hut_t*) p;
+
+   while (args->running) {
+      pthread_barrier_wait(args->startBarrier);
+
+      const Octree *o = getTree(args);
+      while (o) {
+         OctreeIterator iter(args->tree);
+
+         while (! iter.atEnd()) {
+            const Octree *t = iter.get();
+            glm::vec3 d = t->getCOM() - o->getCOM();
+            float distance = glm::dot(d, d);
+
+            if (o == t) {
+               iter.next();
+            } else if (t->isLeaf()) {
+               float force = G * o->getMass() * t->getMass() / distance;
+               o->addForce(force, glm::normalize(d));
+
+               iter.next();
+            } else {
+               float s = t->getWidth();
+
+               // if width / distance > THETA -> width*width / distance*distance > THETA * THETA
+               if (s*s / distance > THETA*THETA) {
+                  iter.next();
+               } else {
+                  float force = G * o->getMass() * t->getMass() / distance;
+                  o->addForce(force, glm::normalize(d));
+
+                  iter.nextSkipChildren();
+               }
+            }   
+         }
+
+         o = getTree(args);
+      }
+
+      pthread_barrier_wait(args->endBarrier);
+   }
+
+   return NULL;
+}
+
 void *update(void *p) {
    thread_arg_t *args = (thread_arg_t*) p;
    std::vector<Mass*> *masses = args->masses;
@@ -71,24 +137,52 @@ void *update(void *p) {
       }
    }
 
-   thread_mass_arg_t tArgs;
-   tArgs.running = true;
-   tArgs.startBarrier = &startBarrier;
-   tArgs.endBarrier = &endBarrier;
-   tArgs.posMut = &posMut;
-   tArgs.masses = args->masses;
+   // thread_mass_arg_t tArgs;
+   // tArgs.running = true;
+   // tArgs.startBarrier = &startBarrier;
+   // tArgs.endBarrier = &endBarrier;
+   // tArgs.posMut = &posMut;
+   // tArgs.masses = args->masses;
+
+   barnes_hut_t bArgs;
+   bArgs.running = true;
+   bArgs.startBarrier = &startBarrier;
+   bArgs.endBarrier = &endBarrier;
+   bArgs.posMut = &posMut;
 
    for (int i = 0; i < NUM_THREADS; i++) {
-      pthread_create(threads + i, NULL, updateMass, (void *) &tArgs);
+      // pthread_create(threads + i, NULL, updateMass, (void *) &tArgs);
+      pthread_create(threads + i, NULL, updateBarnesHut, (void *) &bArgs);
    }
 
    while (args->running) {
       pthread_mutex_lock(args->mut);
 
+      glm::vec3 mins(std::numeric_limits<float>::max());
+      glm::vec3 maxs(-std::numeric_limits<float>::max());
+
       bool change = true;
       while (change) {
          change = false;
          for (std::vector<Mass*>::iterator i = masses->begin(); i != masses->end(); ++i) {
+            glm::vec3 pos = (*i)->getPosition();
+
+            if (pos.x < mins.x)
+               mins.x = pos.x;
+            if (pos.x > maxs.x)
+               maxs.x = pos.x;
+
+            if (pos.y < mins.y)
+               mins.y = pos.y;
+            if (pos.y > maxs.y)
+               maxs.y = pos.y;
+
+            if (pos.z < mins.z)
+               mins.z = pos.z;
+            if (pos.z > maxs.z)
+               maxs.z = pos.z;
+
+
             for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
                float d = (*i)->getRadius() + (*j)->getRadius();
                if ((*i)->squaredDist(**j) <= d*d) {
@@ -128,9 +222,19 @@ void *update(void *p) {
          ; // there needs to be a statement here
       }
 
-      tArgs.pos = 0;
+      // tArgs.pos = 0;
+      bArgs.tree = new Octree(mins, maxs);
+      for (std::vector<Mass*>::iterator i = masses->begin(); i != masses->end(); ++i) {
+         bArgs.tree->addMass(*i);
+      }
+      bArgs.tree->calcCOM();
+      bArgs.iter = new OctreeIterator(bArgs.tree);
+
       pthread_barrier_wait(&startBarrier);
       pthread_barrier_wait(&endBarrier);
+
+      delete bArgs.iter;
+      delete bArgs.tree;
 
       args->curTime = getTime();
 
@@ -140,7 +244,8 @@ void *update(void *p) {
 
       pthread_mutex_unlock(args->mut);
    }
-   tArgs.running = false;
+   // tArgs.running = false;
+   bArgs.running = false;
    pthread_barrier_destroy(&startBarrier);
    pthread_barrier_destroy(&endBarrier);
    pthread_mutex_destroy(&posMut);

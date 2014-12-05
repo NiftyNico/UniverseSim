@@ -34,7 +34,7 @@ private:
    glm::vec3 centerOfMass;
    float totalMass;
 
-   const Mass *mass; // a leaf node holds either 0 or 1 Masses
+   Mass *mass; // a leaf node holds either 0 or 1 Masses
 
    Octree(const glm::vec3 &low, const glm::vec3 &high, const Octree *parent);
 
@@ -42,14 +42,14 @@ private:
 
    int pickChild(const glm::vec3 &pos) const;
 
-   void insertChild(const Mass *m);
+   void insertChild(Mass *m);
 
 public:
    Octree(const glm::vec3 &low, const glm::vec3 &high);
 
    ~Octree();
 
-   void addMass(const Mass *m);
+   void addMass(Mass *m);
 
    void calcCOM();
 
@@ -64,6 +64,8 @@ public:
    const Octree* getParent() const;
 
    float getWidth() const;
+
+   void addForce(float force, glm::vec3 direction) const;
 };
 
 class OctreeIterator {

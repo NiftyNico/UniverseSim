@@ -274,7 +274,7 @@ void drawGL()
 	std::vector<Mass*> *masses = simulator->getMasses();
 	BoxNode *boxes = simulator->getOctree();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
-		if (camera.inView((*it)->getPosition())) {
+		if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
 			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
 		}
 	}

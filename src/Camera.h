@@ -43,7 +43,7 @@ public:
 	void movement(char c);
 	void passiveMouseMoved(int x, int y);
 	void calcNormal();
-	bool inView(const glm::vec3 &pos) const;
+	bool inView(const glm::vec3 &pos, float radius) const;
 private:
 	float aspect;
 	float fovy;

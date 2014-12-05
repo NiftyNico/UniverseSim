@@ -115,7 +115,7 @@ void Camera::calcNormal() {
 	normal = glm::vec3(glm::rotate(-rotations.x, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(-rotations.y, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 }
 
-bool Camera::inView(const glm::vec3 &pos) const {
+bool Camera::inView(const glm::vec3 &pos, float radius) const {
 	glm::vec3 dist = pos - translations;
-	return glm::dot(dist, normal) <= 0 && glm::dot(dist, dist) <= 500 * 500;
+	return (glm::dot(dist, normal) <= 0 && glm::dot(dist, dist) <= 500 * 500) || abs(glm::dot(dist, glm::normalize(normal))) <= radius;
 }

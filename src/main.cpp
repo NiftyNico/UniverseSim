@@ -15,13 +15,13 @@
 #include "Shape.h"
 #include "Simulator.h"
 #include <stdio.h>
-
+#include <sstream>
 #include "planet.h"
 
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 100000
+#define NUM_PLANETS 100
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 2000
 
@@ -35,9 +35,8 @@ Camera camera(WINDOW_DIM);
 bool cull = false;
 bool line = false;
 bool tree = false;
+bool showNumShapes = false;
 glm::vec3 lightPosCam;
-
-static float moveCloudsBy = 0;
 
 // GLSL program
 GLuint pid;
@@ -208,8 +207,8 @@ void initGL()
 	//Create planets
 	for (int i = 0; i < NUM_PLANETS; i++) {
 		simulator->addMass(new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-		 	                                   rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
+		 	                                  rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
+		 	               	                  rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
 	}
 
 	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
@@ -234,6 +233,17 @@ void reshapeGL(int w, int h)
 	camera.setAspect((float)w/h);
 }
 
+void drawText(float x, float y, glm::vec3 color, void* font, char *str)
+{
+  glColor3f(color.r, color.g, color.b);
+  glRasterPos2f(x, y);
+  int len, i;
+  len = (int)strlen(str);
+  for (i = 0; i < len; i++) {
+    glutBitmapCharacter(font, str[i]);
+  }
+}
+
 void drawGL()
 {
 	// Clear buffers
@@ -249,7 +259,17 @@ void drawGL()
 	} else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
-	
+
+	if (showNumShapes) {
+      std::stringstream ss;
+      ss << simulator->getMasses()->size();
+      std::string numShapes;
+      ss >> numShapes;
+
+		drawText(0.45f, -0.9f, glm::vec3(0.5f, 1.0f, 0.5f), GLUT_BITMAP_HELVETICA_18, 
+         (char*)(("Number of shapes: " + numShapes).c_str()));
+   }
+
 	// Create matrix stacks
 	MatrixStack P, MV, T;
 	// Apply camera transforms
@@ -385,6 +405,9 @@ void keyboardGL(unsigned char key, int x, int y)
 		case 'Y':
 			lightPosCam.y -= 0.1;
 			break;
+		case 'n':
+            showNumShapes = !showNumShapes;
+            break;
 		default:
 			camera.movement(key);
 	}

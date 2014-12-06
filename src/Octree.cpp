@@ -187,7 +187,7 @@ void Octree::removeMass(Mass *m) {
    if (mass != m) {
       int child = pickChild(m->getPosition());
       if (children && children[child]) {
-         bool last = children[child]->mass = m;
+         bool last = (children[child]->mass = m);
          children[child]->removeMass(m);
          if (last) {
             delete children[child];

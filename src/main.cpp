@@ -287,32 +287,38 @@ void drawGL()
 
 		glColor3f(1.0f, 1.0f, 1.0f);
 		while (tmp) {
+			glm::vec4 t = P.topMatrix() * MV.topMatrix() * glm::vec4(tmp->low, 1.0f);
+			glm::vec3 l = glm::vec3(t) / t.w;
+
+			t = P.topMatrix() * MV.topMatrix() * glm::vec4(tmp->high, 1.0f);
+			glm::vec3 h = glm::vec3(t) / t.w;
+
 			glBegin(GL_LINE_LOOP);
-				glVertex3f(tmp->low.x,  tmp->low.y,  tmp->low.z);
-				glVertex3f(tmp->high.x, tmp->low.y,  tmp->low.z);
-				glVertex3f(tmp->high.x, tmp->high.y, tmp->low.z);
-				glVertex3f(tmp->low.x,  tmp->high.y, tmp->low.z);
+				glVertex3f(l.x, l.y, l.z);
+				glVertex3f(h.x, l.y, l.z);
+				glVertex3f(h.x, h.y, l.z);
+				glVertex3f(l.x, h.y, l.z);
 			glEnd();
 
 			glBegin(GL_LINE_LOOP);
-				glVertex3f(tmp->low.x,  tmp->low.y,  tmp->high.z);
-				glVertex3f(tmp->high.x, tmp->low.y,  tmp->high.z);
-				glVertex3f(tmp->high.x, tmp->high.y, tmp->high.z);
-				glVertex3f(tmp->low.x,  tmp->high.y, tmp->high.z);
+				glVertex3f(l.x, l.y, h.z);
+				glVertex3f(h.x, l.y, h.z);
+				glVertex3f(h.x, h.y, h.z);
+				glVertex3f(l.x, h.y, h.z);
 			glEnd();
 
 			glBegin(GL_LINE);
-				glVertex3f(tmp->low.x, tmp->low.y, tmp->low.z);
-				glVertex3f(tmp->low.x, tmp->low.y, tmp->high.z);
+				glVertex3f(l.x, l.y, l.z);
+				glVertex3f(l.x, l.y, h.z);
 
-				glVertex3f(tmp->high.x, tmp->low.y, tmp->low.z);
-				glVertex3f(tmp->high.x, tmp->low.y, tmp->high.z);
+				glVertex3f(h.x, l.y, l.z);
+				glVertex3f(h.x, l.y, h.z);
 
-				glVertex3f(tmp->high.x, tmp->high.y, tmp->low.z);
-				glVertex3f(tmp->high.x, tmp->high.y, tmp->high.z);
+				glVertex3f(h.x, h.y, l.z);
+				glVertex3f(h.x, h.y, h.z);
 
-				glVertex3f(tmp->low.x, tmp->high.y, tmp->low.z);
-				glVertex3f(tmp->low.x, tmp->high.y, tmp->high.z);
+				glVertex3f(l.x, h.y, l.z);
+				glVertex3f(l.x, h.y, h.z);
 			glEnd();
 
 			tmp = tmp->next;

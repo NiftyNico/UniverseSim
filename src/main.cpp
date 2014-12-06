@@ -30,6 +30,7 @@ using namespace std;
 int time0;
 Shape planet;
 Shape cat;
+Shape rock1, rock2;
 Shape plane;
 Camera camera(WINDOW_DIM);
 bool cull = false;
@@ -40,6 +41,7 @@ glm::vec3 lightPosCam;
 
 // GLSL program
 GLuint pid;
+
 // GLSL handles to various parameters in the shaders
 GLint h_vertPosition;
 GLint h_vertNormal;
@@ -51,17 +53,25 @@ GLint h_texture0;
 GLint h_texture1;
 GLint h_texture2;
 GLint h_lightPosCam;
+
 // OpenGL handle to texture data
-GLuint texture0ID;
-GLuint texture1ID;
-GLuint texture2ID;
-GLuint texture3ID;
-GLuint texture4ID;
+GLuint earthKdTexture;
+GLuint earthKsTexture;
+GLuint earthCloudsTexture;
+GLuint outershellTexture;
+GLuint flowerTexture;
+GLuint rock1KdTexture;
+GLuint rock2KdTexture;
+GLuint uniformKsTexture;
+GLuint blackTexture;
+
 // Texture matrix
 glm::mat3 T(1.0);
 
 Planet *planetPlanet;
 Planet *catPlanet;
+Planet *rock1Planet;
+Planet *rock2Planet;
 
 Planet* thePlane;
 Simulator *simulator;
@@ -86,6 +96,8 @@ void loadScene()
 	planet.load(getObjPath("sphere.obj"));
 	plane.load(getObjPath("sphere.obj"));
 	cat.load(getObjPath("cat.obj"));
+   rock1.load(getObjPath("rock1.obj"));
+   rock2.load(getObjPath("rock2.obj"));
 	lightPosCam = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
@@ -130,6 +142,8 @@ void initGL()
 	planet.init();
 	plane.init();
 	cat.init();
+   rock1.init();
+   rock2.init();
 
 	//////////////////////////////////////////////////////
 	// Intialize the shaders
@@ -189,15 +203,16 @@ void initGL()
 	h_texture2 = GLSL::getUniformLocation(pid, "texture2");
 	h_lightPosCam = GLSL::getUniformLocation(pid, "lightPosCam");
 	
-	//////////////////////////////////////////////////////
 	// Intialize textures
-	//////////////////////////////////////////////////////
-	
-	loadTexture(&texture0ID, getImgPath("earthKd.bmp").c_str());
-	loadTexture(&texture1ID, getImgPath("earthKs.bmp").c_str());
-	loadTexture(&texture2ID, getImgPath("earthClouds.bmp").c_str());
-	loadTexture(&texture3ID, getImgPath("outershell.bmp").c_str());
-	loadTexture(&texture4ID, getImgPath("flower.bmp").c_str());
+	loadTexture(&earthKdTexture, getImgPath("earthKd.bmp").c_str());
+	loadTexture(&earthKsTexture, getImgPath("earthKs.bmp").c_str());
+	loadTexture(&earthCloudsTexture, getImgPath("earthClouds.bmp").c_str());
+	loadTexture(&outershellTexture, getImgPath("outershell.bmp").c_str());
+	loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
+   loadTexture(&rock1KdTexture, getImgPath("rock1Kd.bmp").c_str());
+   loadTexture(&rock2KdTexture, getImgPath("rock2Kd.bmp").c_str());
+   loadTexture(&uniformKsTexture, getImgPath("uniformKs.bmp").c_str());
+   loadTexture(&blackTexture, getImgPath("black.bmp").c_str());
 
 	// Check GLSL
 	GLSL::checkVersion();
@@ -207,20 +222,21 @@ void initGL()
 	//Create planets
 	for (int i = 0; i < NUM_PLANETS; i++) {
 		simulator->addMass(new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-		 	                                  rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-		 	               	                  rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
+		 	                                   rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
+		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
 	}
 
 	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
-	thePlane = new Planet(&plane, &texture3ID, &texture3ID, &texture3ID, 0.0f);
+	thePlane = new Planet(&plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 	thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
 	thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
 
-	planetPlanet = new Planet(&planet, &texture0ID, &texture1ID, &texture2ID, 0.00005f);
-
-	catPlanet = new Planet(&cat, &texture4ID, &texture4ID, &texture2ID, 0.00005f);
+	planetPlanet = new Planet(&planet, &earthKdTexture, &earthKsTexture, &earthCloudsTexture, 0.00005f);
+	catPlanet = new Planet(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
+   rock1Planet = new Planet(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
+   rock2Planet = new Planet(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
 
 	simulator->start();
 }
@@ -295,7 +311,7 @@ void drawGL()
 	BoxNode *boxes = simulator->getOctree();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
 		if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+			rock2Planet->draw((*it)->getPosition(), (*it)->getRadius());
 		}
 	}
 
@@ -406,8 +422,8 @@ void keyboardGL(unsigned char key, int x, int y)
 			lightPosCam.y -= 0.1;
 			break;
 		case 'n':
-            showNumShapes = !showNumShapes;
-            break;
+         showNumShapes = !showNumShapes;
+         break;
 		default:
 			camera.movement(key);
 	}

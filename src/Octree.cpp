@@ -206,7 +206,7 @@ void Octree::removeMass(Mass *m) {
    }
 }
 
-Mass* Octree::findCollsion(Mass *m, float maxRadius) const {
+Mass* Octree::findCollision(Mass *m, float maxRadius) const {
    float d = m->getRadius() + maxRadius;
    glm::vec3 p = m->getPosition();
    glm::vec3 l(p.x - d, p.y - d, p.z - d);

@@ -72,7 +72,7 @@ public:
 
    void removeMass(Mass *m);
 
-   Mass* findCollsion(Mass *m, float maxRadius) const;
+   Mass* findCollision(Mass *m, float maxRadius) const;
 };
 
 class OctreeIterator {

@@ -54,3 +54,11 @@ void Mass::stepTime(float newTime) {
    acceleration = glm::vec3(0.0f);
    curTime = newTime;
 }
+
+void Mass::setIndex(int i) {
+   index = i;
+}
+
+int Mass::getIndex() const {
+   return index;
+}

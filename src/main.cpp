@@ -21,7 +21,7 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 10000
+#define NUM_PLANETS 100000
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 2000
 

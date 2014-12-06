@@ -206,8 +206,8 @@ void Octree::removeMass(Mass *m) {
    }
 }
 
-Mass* Octree::findCollision(Mass *m, float maxRadius) const {
-   float d = m->getRadius() + maxRadius;
+Mass* Octree::findCollision(Mass *m) const {
+   float d = m->getRadius();
    glm::vec3 p = m->getPosition();
    glm::vec3 l(p.x - d, p.y - d, p.z - d);
    glm::vec3 h(p.x + d, p.y + d, p.z + d);
@@ -219,7 +219,7 @@ Mass* Octree::findCollision(Mass *m, float maxRadius) const {
       if (o->mass == m) {
          iter.next();
       } else if (overlaps(l, h, o->low, o->high)) {
-         if (o->isLeaf()) {
+         if (o->mass) {
             if (m->squaredDist(*(o->mass)) <= d*d) {
                return o->mass;
             }

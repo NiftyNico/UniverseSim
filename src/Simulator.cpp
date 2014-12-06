@@ -2,6 +2,7 @@
 
 #include <sys/time.h>
 #include <limits>
+#include <algorithm>
 
 #define G 6.67384E-2//11
 #define THETA 0.5
@@ -180,38 +181,74 @@ void *update(void *p) {
             maxs.z = pos.z;
 
 
-         for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
-            float d = (*i)->getRadius() + (*j)->getRadius();
-            if ((*i)->squaredDist(**j) <= d*d) {
+         // for (std::vector<Mass*>::iterator j = i + 1; j != masses->end(); ++j) {
+         //    float d = (*i)->getRadius() + (*j)->getRadius();
+         //    if ((*i)->squaredDist(**j) <= d*d) {
 
-               float m_t = (*i)->getMass() + (*j)->getMass();
-               float p1 = (*i)->getMass() / m_t;
-               float p2 = (*j)->getMass() / m_t;
+         //       float m_t = (*i)->getMass() + (*j)->getMass();
+         //       float p1 = (*i)->getMass() / m_t;
+         //       float p2 = (*j)->getMass() / m_t;
 
-               Mass *combined = new Mass(p1 * (*i)->getPosition() + p2 * (*j)->getPosition(),
-                                         p1 * (*i)->getVelocity() + p2 * (*j)->getVelocity(),
-                                         m_t,
-                                         args->curTime);
+         //       Mass *combined = new Mass(p1 * (*i)->getPosition() + p2 * (*j)->getPosition(),
+         //                                 p1 * (*i)->getVelocity() + p2 * (*j)->getVelocity(),
+         //                                 m_t,
+         //                                 args->curTime);
 
-               std::vector<Mass*>::iterator last = i - 1;
+         //       std::vector<Mass*>::iterator last = i - 1;
 
-               delete *i;
-               delete *j;
-               masses->erase(j);
-               masses->erase(i);
-               masses->push_back(combined);
+         //       delete *i;
+         //       delete *j;
+         //       masses->erase(j);
+         //       masses->erase(i);
+         //       masses->push_back(combined);
 
-               i = last;
-               break;
-            }
+         //       i = last;
+         //       break;
+         //    }
+         // }
+      }
+
+      Octree *tree = new Octree(mins, maxs);
+      std::vector<int> toRemove;
+      for (std::vector<Mass*>::iterator i = masses->begin(); i != masses->end(); ++i) {
+         Mass *m = tree->findCollision(*i);
+         if (!m) {
+            (*i)->setIndex(i - masses->begin());
+            tree->addMass(*i);
+         } else {
+            tree->removeMass(m);
+            toRemove.push_back(m->getIndex());
+
+            float m_t = (*i)->getMass() + m->getMass();
+            float p1 = (*i)->getMass() / m_t;
+            float p2 = m->getMass() / m_t;
+
+            Mass *combined = new Mass(p1 * (*i)->getPosition() + p2 * m->getPosition(),
+                                      p1 * (*i)->getVelocity() + p2 * m->getVelocity(),
+                                      m_t,
+                                      args->curTime);
+
+            std::vector<Mass*>::iterator last = i - 1;
+            delete *i;
+            masses->erase(i);
+
+            masses->push_back(combined);
+
+            i = last;
          }
       }
 
+      std::sort(toRemove.begin(), toRemove.end());
+      for (std::vector<int>::reverse_iterator rit = toRemove.rbegin(); rit!= toRemove.rend(); ++rit) {
+         delete *(masses->begin() + *rit);
+         masses->erase(masses->begin() + *rit);
+      }
+
       // tArgs.pos = 0;
-      bArgs.tree = new Octree(mins, maxs);
+      bArgs.tree = tree; /*new Octree(mins, maxs);
       for (std::vector<Mass*>::iterator i = masses->begin(); i != masses->end(); ++i) {
          bArgs.tree->addMass(*i);
-      }
+      }*/
       bArgs.tree->calcCOM();
       bArgs.iter = new OctreeIterator(bArgs.tree);
 

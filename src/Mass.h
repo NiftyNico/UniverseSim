@@ -20,6 +20,7 @@ private:
    glm::vec3 position;
    glm::vec3 velocity;
    glm::vec3 acceleration;
+   int index;
 
 public:
    Mass(glm::vec3 position, float radius);
@@ -41,6 +42,10 @@ public:
    void addForce(float force, glm::vec3 direction);
 
    void stepTime(float newTime);
+
+   void setIndex(int i);
+
+   int getIndex() const;
 };
 
 #endif

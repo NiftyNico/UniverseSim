@@ -58,6 +58,7 @@ bool line = false;
 bool tree = false;
 bool showNumShapes = false;
 glm::vec3 lightPositions[MAX_LIGHTS];
+GLint numLights = 1;
 
 // GLSL program
 GLuint pid;
@@ -73,6 +74,7 @@ GLint h_texture0;
 GLint h_texture1;
 GLint h_texture2;
 GLint h_lightPositions;
+GLint h_numLights;
 
 // OpenGL handle to texture data
 GLuint outershellTexture;
@@ -235,6 +237,7 @@ void initGL()
    h_texture1 = GLSL::getUniformLocation(pid, "texture1");
    h_texture2 = GLSL::getUniformLocation(pid, "texture2");
    h_lightPositions = GLSL::getUniformLocation(pid, "lightPositions");
+   h_numLights = GLSL::getUniformLocation(pid, "numLights");;
 
    loadTexture(&outershellTexture, getImgPath("outershell.bmp").c_str());
    loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
@@ -358,6 +361,7 @@ void drawGL()
    glUniformMatrix4fv(h_P, 1, GL_FALSE, glm::value_ptr(P.topMatrix()));
    glUniformMatrix4fv(h_MV, 1, GL_FALSE, glm::value_ptr(MV.topMatrix()));
    glUniform3fv(h_lightPositions, 3 * MAX_LIGHTS * sizeof(GLfloat), (const GLfloat*) lightPositions);
+   glUniform1i(h_numLights, numLights);
    
    Drawable::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
      &h_vertPosition, &h_vertNormal, &h_vertTexCoords, &h_T);

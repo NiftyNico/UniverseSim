@@ -22,17 +22,14 @@ void DrawableRandomizer::initSharedRefs(Shape* rockShapes, unsigned int numRockS
                     					Shape* starShapes, unsigned int numStarShapes, 
                     					GLuint uniformKsTexture, GLuint blackTexture)
 {
-	int mSize;
-	DrawableRandomizer::rockShapes = (Shape*) malloc(mSize = numRockShapes * sizeof(Shape));
-	memcpy(DrawableRandomizer::rockShapes, rockShapes, mSize);
+	//TODO: Copy rather than setting reference
+	DrawableRandomizer::rockShapes = rockShapes;
 	DrawableRandomizer::numRockShapes = numRockShapes;
 
-	DrawableRandomizer::planetShapes = (Shape*) malloc(mSize = numPlanetShapes * sizeof(Shape));
-	memcpy(DrawableRandomizer::planetShapes, planetShapes, mSize);
+	DrawableRandomizer::planetShapes = planetShapes;	
 	DrawableRandomizer::numPlanetShapes = numPlanetShapes;
 
-	DrawableRandomizer::starShapes = (Shape*) malloc(mSize = numStarShapes * sizeof(Shape));
-	memcpy(DrawableRandomizer::starShapes, starShapes, mSize);
+	DrawableRandomizer::starShapes = starShapes;	
 	DrawableRandomizer::numStarShapes = numStarShapes;
 
 	DrawableRandomizer::uniformKsTexture = uniformKsTexture;

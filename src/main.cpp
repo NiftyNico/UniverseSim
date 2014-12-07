@@ -383,6 +383,7 @@ void drawGL()
    glm::vec3 tempPos = cameraMass->getPosition();
    tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
    camera.setPosition(tempPos);
+   lightPosCam = tempPos;
 
    // Unbind the program
    glUseProgram(0);

@@ -16,7 +16,7 @@
 #include "Simulator.h"
 #include <stdio.h>
 #include <sstream>
-#include "planet.h"
+#include "Drawable.h"
 #include "Texture.h"
 #include "glm/gtx/string_cast.hpp"
 
@@ -67,7 +67,7 @@ GLuint blackTexture;
 
 unsigned int numRockTextures;
 GLuint* rockTextures;
-unsigned int numPlanetTextures;
+unsigned int numDrawableTextures;
 GLuint* planetTextures;
 unsigned int numStarTextures;
 GLuint* starTextures;
@@ -77,12 +77,12 @@ GLuint* atmosTextures;
 // Texture matrix
 glm::mat3 T(1.0);
 
-Planet *planetPlanet;
-Planet *catPlanet;
-Planet *rock1Planet;
-Planet *rock2Planet;
+Drawable *planetDrawable;
+Drawable *catDrawable;
+Drawable *rock1Drawable;
+Drawable *rock2Drawable;
 
-Planet* thePlane;
+Drawable* thePlane;
 Simulator *simulator;
 
 string getShaderPath(string filename)
@@ -105,7 +105,7 @@ string getRockPath()
    return getImgPath("rocks/");
 }
 
-string getPlanetPath()
+string getDrawablePath()
 {
    return getImgPath("planets/");
 }
@@ -211,7 +211,7 @@ void initGL()
 	
 	// Intialize textures
    loadTextures(&rockTextures, &numRockTextures, getRockPath());
-   loadTextures(&planetTextures, &numPlanetTextures, getPlanetPath());
+   loadTextures(&planetTextures, &numDrawableTextures, getDrawablePath());
    loadTextures(&starTextures, &numStarTextures, getStarPath());
    loadTextures(&atmosTextures, &numAtmosTextures, getAtmosPath());
 
@@ -233,15 +233,15 @@ void initGL()
 
 	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
-	thePlane = new Planet(&plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
+	thePlane = new Drawable(&plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 	thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
 	thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
 
-	planetPlanet = new Planet(&planet, &planetTextures[2], &blackTexture, &blackTexture, 0.00005f);
-	//catPlanet = new Planet(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
-   //rock1Planet = new Planet(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
-   //rock2Planet = new Planet(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
+	planetDrawable = new Drawable(&planet, &planetTextures[2], &blackTexture, &blackTexture, 0.00005f);
+	//catDrawable = new Drawable(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
+   //rock1Drawable = new Drawable(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
+   //rock2Drawable = new Drawable(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
 
 	simulator->start();
 }
@@ -305,7 +305,7 @@ void drawGL()
 	glUniformMatrix4fv(h_MV, 1, GL_FALSE, glm::value_ptr(MV.topMatrix()));
 	glUniform3fv(h_lightPosCam, 1, glm::value_ptr(lightPosCam));
 	
-	Planet::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
+	Drawable::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
      &h_vertPosition, &h_vertNormal, &h_vertTexCoords, &h_T);
 
 	thePlane->draw();
@@ -316,7 +316,7 @@ void drawGL()
 	BoxNode *boxes = simulator->getOctree();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
 		if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
+			planetDrawable->draw((*it)->getPosition(), (*it)->getRadius());
 		}
 	}
 
@@ -443,7 +443,7 @@ void idleGL()
 	// Update every 60Hz
 	if(dt > 1000.0/60.0) {
 		time0 = time1;
-		Planet::setTime(time1);
+		Drawable::setTime(time1);
 		glutPostRedisplay();
 	}
 }

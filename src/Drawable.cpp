@@ -1,22 +1,22 @@
-#include "planet.h"
+#include "Drawable.h"
 
-MatrixStack* Planet::stack;
-GLint* Planet::stackBind;
-GLint* Planet::colorBind;
-GLint* Planet::reflectBind;
-GLint* Planet::atmosBind;
-GLint* Planet::vPosBind;
-GLint* Planet::vNormBind;
-GLint* Planet::vTexCoordsBind;
-GLint* Planet::texTransBind;
-float Planet::time;
+MatrixStack* Drawable::stack;
+GLint* Drawable::stackBind;
+GLint* Drawable::colorBind;
+GLint* Drawable::reflectBind;
+GLint* Drawable::atmosBind;
+GLint* Drawable::vPosBind;
+GLint* Drawable::vNormBind;
+GLint* Drawable::vTexCoordsBind;
+GLint* Drawable::texTransBind;
+float Drawable::time;
 
-Planet::Planet(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier) {
-    Planet::shape = shape;
-    Planet::coloring = coloring;
-    Planet::reflectivity = reflectivity;
-    Planet::atmosphere = atmosphere;
-    Planet::atmosPosModifier = atmosPosModifier;
+Drawable::Drawable(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier) {
+    Drawable::shape = shape;
+    Drawable::coloring = coloring;
+    Drawable::reflectivity = reflectivity;
+    Drawable::atmosphere = atmosphere;
+    Drawable::atmosPosModifier = atmosPosModifier;
     transpose[0][0] = 1;
     transpose[1][1] = 1;
     transpose[2][2] = 1;
@@ -33,37 +33,37 @@ Planet::Planet(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atm
     atmosPos[2][2] = 1.0f;
 }
 
-void Planet::setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
+void Drawable::setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
  GLint* vPosBind, GLint* vNormBind, GLint* vTexCoordsBind, GLint* texTransBind) {
-    Planet::stack = stack;
-    Planet::stackBind = stackBind;
-    Planet::colorBind = colorBind;
-    Planet::reflectBind = reflectBind;
-    Planet::atmosBind = atmosBind;
-    Planet::vPosBind = vPosBind;
-    Planet::vNormBind = vNormBind;
-    Planet::vTexCoordsBind = vTexCoordsBind;
-    Planet::texTransBind = texTransBind;
+    Drawable::stack = stack;
+    Drawable::stackBind = stackBind;
+    Drawable::colorBind = colorBind;
+    Drawable::reflectBind = reflectBind;
+    Drawable::atmosBind = atmosBind;
+    Drawable::vPosBind = vPosBind;
+    Drawable::vNormBind = vNormBind;
+    Drawable::vTexCoordsBind = vTexCoordsBind;
+    Drawable::texTransBind = texTransBind;
 }
 
-void Planet::setTime(float time)
+void Drawable::setTime(float time)
 {
-    Planet::time = time;
+    Drawable::time = time;
 }
 
-void Planet::rotate(float angle, glm::vec3 rotateVec) {
+void Drawable::rotate(float angle, glm::vec3 rotateVec) {
     transpose *= glm::rotate(angle, rotateVec);
 }
 
-void Planet::translate(glm::vec3 transVec) {
+void Drawable::translate(glm::vec3 transVec) {
     transpose *= glm::translate(transVec);
 }
 
-void Planet::scale(glm::vec3 scaleVec) {
+void Drawable::scale(glm::vec3 scaleVec) {
     transpose *= glm::scale(scaleVec);
 }
 
-void Planet::draw() {
+void Drawable::draw() {
     stack->pushMatrix();
     stack->multMatrix(transpose);
 
@@ -99,7 +99,7 @@ void Planet::draw() {
     stack->popMatrix();
 }
 
-void Planet::draw(glm::vec3 pos, float r) {
+void Drawable::draw(glm::vec3 pos, float r) {
     stack->pushMatrix();
     stack->translate(pos);
     stack->scale(glm::vec3(r));

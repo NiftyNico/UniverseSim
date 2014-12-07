@@ -1,5 +1,5 @@
-#ifndef _PLANET_
-#define _PLANET_
+#ifndef DRAWABLE_H
+#define DRAWABLE_H
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "Shape.h"
 
-class Planet {
+class Drawable {
 
 private:
     glm::mat4 transpose;
@@ -38,7 +38,7 @@ private:
     static float time;
 
 public:
-    Planet(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier);
+    Drawable(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier);
 
     static void setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
      GLint* vPosBind, GLint* vNormBind, GLint* vTexCoordsBind, GLint* texTransBind);

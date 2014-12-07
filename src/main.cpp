@@ -17,13 +17,18 @@
 #include <stdio.h>
 #include <sstream>
 #include "planet.h"
-
+#include "Texture.h"
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
 #define NUM_PLANETS 100
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 2000
+
+#define SHADER_PATH "src/shader/"
+#define OBJ_PATH "res/obj/"
+
+#define IMG_PATH "res/img/"
 
 using namespace std;
 
@@ -55,15 +60,19 @@ GLint h_texture2;
 GLint h_lightPosCam;
 
 // OpenGL handle to texture data
-GLuint earthKdTexture;
-GLuint earthKsTexture;
-GLuint earthCloudsTexture;
 GLuint outershellTexture;
 GLuint flowerTexture;
-GLuint rock1KdTexture;
-GLuint rock2KdTexture;
 GLuint uniformKsTexture;
 GLuint blackTexture;
+
+unsigned int numRockTextures;
+GLuint* rockTextures;
+unsigned int numPlanetTextures;
+GLuint* planetTextures;
+unsigned int numStarTextures;
+GLuint* starTextures;
+unsigned int numAtmosTextures;
+GLuint* atmosTextures;
 
 // Texture matrix
 glm::mat3 T(1.0);
@@ -78,17 +87,37 @@ Simulator *simulator;
 
 string getShaderPath(string filename)
 {
-	return "src/shader/" + filename;
+	return SHADER_PATH + filename;
 }
 
 string getObjPath(string filename)
 {
-	return "res/obj/" + filename;
+	return OBJ_PATH + filename;
 }
 
 string getImgPath(string filename)
 {
-	return "res/img/" + filename;
+   return IMG_PATH + filename;
+}
+
+string getRockPath()
+{
+   return getImgPath("rocks/");
+}
+
+string getPlanetPath()
+{
+   return getImgPath("planets/");
+}
+
+string getStarPath()
+{
+   return getImgPath("stars/");
+}
+
+string getAtmosPath()
+{
+   return getImgPath("atmospheres/");
 }
 
 void loadScene()
@@ -99,29 +128,6 @@ void loadScene()
    rock1.load(getObjPath("rock1.obj"));
    rock2.load(getObjPath("rock2.obj"));
 	lightPosCam = glm::vec3(1.0f, 1.0f, 1.0f);
-}
-
-void loadTexture(GLuint* textureId, const char* fileName)
-{
-	Image *image1 = (Image *)malloc(sizeof(Image));
-	if(image1 == NULL) {
-		printf("Error allocating space for image");
-	}
-	if(!ImageLoad(fileName, image1)) {
-		printf("Error loading texture image\n");
-	}
-	glActiveTexture(GL_TEXTURE1);
-	glGenTextures(1, textureId);
-	glBindTexture(GL_TEXTURE_2D, *textureId);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY,
-				 0, GL_RGB, GL_UNSIGNED_BYTE, image1->data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	free(image1);	
 }
 
 void initGL()
@@ -204,16 +210,15 @@ void initGL()
 	h_lightPosCam = GLSL::getUniformLocation(pid, "lightPosCam");
 	
 	// Intialize textures
-	loadTexture(&earthKdTexture, getImgPath("earthKd.bmp").c_str());
-	loadTexture(&earthKsTexture, getImgPath("earthKs.bmp").c_str());
-	loadTexture(&earthCloudsTexture, getImgPath("earthClouds.bmp").c_str());
+   loadTextures(&rockTextures, &numRockTextures, getRockPath());
+   loadTextures(&planetTextures, &numPlanetTextures, getPlanetPath());
+   loadTextures(&starTextures, &numStarTextures, getStarPath());
+   loadTextures(&atmosTextures, &numAtmosTextures, getAtmosPath());
+
 	loadTexture(&outershellTexture, getImgPath("outershell.bmp").c_str());
 	loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
-   loadTexture(&rock1KdTexture, getImgPath("rock1Kd.bmp").c_str());
-   loadTexture(&rock2KdTexture, getImgPath("rock2Kd.bmp").c_str());
    loadTexture(&uniformKsTexture, getImgPath("uniformKs.bmp").c_str());
    loadTexture(&blackTexture, getImgPath("black.bmp").c_str());
-
 	// Check GLSL
 	GLSL::checkVersion();
 
@@ -233,10 +238,10 @@ void initGL()
 	thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
 	thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
 
-	planetPlanet = new Planet(&planet, &earthKdTexture, &earthKsTexture, &earthCloudsTexture, 0.00005f);
-	catPlanet = new Planet(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
-   rock1Planet = new Planet(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
-   rock2Planet = new Planet(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
+	planetPlanet = new Planet(&planet, &planetTextures[2], &blackTexture, &blackTexture, 0.00005f);
+	//catPlanet = new Planet(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
+   //rock1Planet = new Planet(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
+   //rock2Planet = new Planet(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
 
 	simulator->start();
 }
@@ -311,7 +316,7 @@ void drawGL()
 	BoxNode *boxes = simulator->getOctree();
 	for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
 		if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-			rock2Planet->draw((*it)->getPosition(), (*it)->getRadius());
+			planetPlanet->draw((*it)->getPosition(), (*it)->getRadius());
 		}
 	}
 

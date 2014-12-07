@@ -1,4 +1,4 @@
-SOURCES=BoxList.cpp Camera.cpp GLSL.cpp Image.cpp main.cpp Mass.cpp MatrixStack.cpp Octree.cpp planet.cpp Shape.cpp Simulator.cpp tiny_obj_loader.cc
+SOURCES=BoxList.cpp Camera.cpp GLSL.cpp Image.cpp main.cpp Mass.cpp MatrixStack.cpp Octree.cpp planet.cpp Shape.cpp Simulator.cpp Texture.cpp tiny_obj_loader.cc
 SRCFILES=$(addprefix src/, $(SOURCES))
 CCFLAGS=-O3 -ansi -pedantic -Wno-deprecated -g -Wall
 

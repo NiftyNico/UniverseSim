@@ -26,7 +26,16 @@
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 200
 
+#define MIN_PLANET_MASS 5000
+#define MIN_SUN_MASS 100000
+#define MIN_BLACK_HOLE_MASS 1000000
+
+
+#define MAX_INIT_VELOCITY 2
+
+#define ROCK_POOL_SIZE 100
 #define PLANET_POOL_SIZE 100
+#define STAR_POOL_SIZE 100
 
 #define DISTANCE_FROM_DRAWABLE_MOD 5
 
@@ -75,7 +84,9 @@ glm::mat3 T(1.0);
 
 DrawableRandomizer *dRandomizer;
 
+Drawable *rockPool;
 Drawable *planetPool;
+Drawable *starPool;
 
 Drawable *planetDrawable;
 Drawable *catDrawable;
@@ -83,6 +94,7 @@ Drawable *rock1Drawable;
 Drawable *rock2Drawable;
 
 Drawable* thePlane;
+Drawable* blackHole;
 Simulator *simulator;
 
 string getShaderPath(string filename)
@@ -120,9 +132,19 @@ string getAtmosPath()
    return getImgPath("atmospheres/");
 }
 
+Drawable* getRock()
+{
+   return rockPool + rand() % ROCK_POOL_SIZE;
+}
+
 Drawable* getPlanet()
 {
    return planetPool + rand() % PLANET_POOL_SIZE;
+}
+
+Drawable* getStar()
+{
+   return starPool + rand() % STAR_POOL_SIZE;
 }
 
 void loadScene()
@@ -225,9 +247,17 @@ void initGL()
                                       uniformKsTexture, blackTexture);
    dRandomizer = new DrawableRandomizer(getRockPath(), getPlanetPath(), getStarPath(), getAtmosPath());
    
+   rockPool = (Drawable*) malloc(ROCK_POOL_SIZE * sizeof(Drawable));
+   for(int i = 0; i < ROCK_POOL_SIZE; i++)
+      rockPool[i] = dRandomizer->randomDrawable(DrawableType::ROCK);
+
    planetPool = (Drawable*) malloc(PLANET_POOL_SIZE * sizeof(Drawable));
    for(int i = 0; i < PLANET_POOL_SIZE; i++)
-      planetPool[i] = dRandomizer->randomDrawable(DrawableRandomizer::DrawableType::PLANET);
+      planetPool[i] = dRandomizer->randomDrawable(DrawableType::PLANET);
+
+   starPool = (Drawable*) malloc(STAR_POOL_SIZE * sizeof(Drawable));
+   for(int i = 0; i < STAR_POOL_SIZE; i++)
+      starPool[i] = dRandomizer->randomDrawable(DrawableType::STAR);
 
    // Check GLSL
    GLSL::checkVersion();
@@ -239,24 +269,28 @@ void initGL()
    for (int i = 0; i < NUM_PLANETS; i++) {
       Mass* mass = new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
-                                      rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f);
-      mass->setDrawable(getPlanet());
+                                      rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 
+                            /*glm::vec3(rand() % MAX_INIT_VELOCITY, 
+                                      rand() % MAX_INIT_VELOCITY, 
+                                      rand() % MAX_INIT_VELOCITY),*/
+                            1 + (rand() % 100) / 10.0f);
+      mass->setDrawable(getRock());
       simulator->addMass(mass);
       Simulator::setSelectedMass(mass);
    }
 
    //simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
-   thePlane = new Drawable(&plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
+   thePlane = new Drawable(DrawableType::ROCK, &plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
    thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
    thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
    thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
-   dRandomizer->randomDrawable(DrawableRandomizer::DrawableType::PLANET);
-   planetDrawable = new Drawable(&planet, &blackTexture, &blackTexture, &blackTexture, 0.00005f);
+   dRandomizer->randomDrawable(DrawableType::PLANET);
+   //planetDrawable = new Drawable(DrawableType::PLANET, &planet, &blackTexture, &blackTexture, &blackTexture, 0.00005f);
    //catDrawable = new Drawable(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
    //rock1Drawable = new Drawable(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
    //rock2Drawable = new Drawable(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
-
+   blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &blackTexture, &blackTexture, &blackTexture, 0.0f);
    simulator->start();
 }
 
@@ -330,8 +364,17 @@ void drawGL()
    BoxNode *boxes = simulator->getOctree();
    for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
       if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-         if(!(*it)->getDrawable())
+         Drawable* toDraw = (*it)->getDrawable();
+         DrawableType type = toDraw->getType();
+         /*if(!(*it)->getDrawable())
+            (*it)->setDrawable(getPlanet());*/
+         if(type == DrawableType::ROCK && (*it)->getMass() >= MIN_PLANET_MASS)
             (*it)->setDrawable(getPlanet());
+         if(type == DrawableType::PLANET && (*it)->getMass() >= MIN_SUN_MASS)
+            (*it)->setDrawable(getStar());
+         if(type == DrawableType::STAR && (*it)->getMass() >= MIN_BLACK_HOLE_MASS)
+            (*it)->setDrawable(blackHole);
+
          //getPlanet()->draw((*it)->getPosition(), (*it)->getRadius());
          (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
       }

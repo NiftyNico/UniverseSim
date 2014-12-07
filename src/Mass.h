@@ -25,6 +25,8 @@ private:
 
 public:
    Mass(glm::vec3 position, float radius);
+   
+   Mass(glm::vec3 position, glm::vec3 velocity, float radius);
 
    Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime);
 

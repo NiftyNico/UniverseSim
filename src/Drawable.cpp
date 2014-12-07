@@ -11,12 +11,13 @@ GLint* Drawable::vTexCoordsBind;
 GLint* Drawable::texTransBind;
 float Drawable::time;
 
-Drawable::Drawable(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier) {
+Drawable::Drawable(DrawableType type, Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier) {
     Drawable::shape = shape;
     Drawable::coloring = coloring;
     Drawable::reflectivity = reflectivity;
     Drawable::atmosphere = atmosphere;
     Drawable::atmosPosModifier = atmosPosModifier;
+    Drawable::type = type;
     transpose[0][0] = 1;
     transpose[1][1] = 1;
     transpose[2][2] = 1;
@@ -63,6 +64,11 @@ void Drawable::scale(glm::vec3 scaleVec) {
     transpose *= glm::scale(scaleVec);
 }
 
+DrawableType Drawable::getType() {
+    return type;
+}
+
+
 void Drawable::draw() {
     stack->pushMatrix();
     stack->multMatrix(transpose);
@@ -102,6 +108,8 @@ void Drawable::draw() {
 void Drawable::draw(glm::vec3 pos, float r) {
     stack->pushMatrix();
     stack->translate(pos);
+    stack->rotate(0.00001f * time, glm::vec3(0.0f, 1.0f, 0.0f));
+
     stack->scale(glm::vec3(r));
 
     glActiveTexture(GL_TEXTURE0 + 0);

@@ -10,6 +10,16 @@ Mass::Mass(glm::vec3 position, float radius) {
    this->drawable = NULL;
 }
 
+Mass::Mass(glm::vec3 position, glm::vec3 velocity, float radius) {
+   this->position = position;
+   this->velocity = velocity;
+   this->acceleration = glm::vec3(0.0f);
+   this->mass = 4.0 * M_PI * radius * radius * radius / 3.0;
+   this->radius = radius;
+   curTime = 0.0f;
+   this->drawable = NULL;
+}
+
 Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
    this->position = position;
    this->velocity = velocity;

@@ -13,6 +13,14 @@
 #include "Camera.h"
 #include "Shape.h"
 
+enum class DrawableType 
+{ 
+    ROCK, 
+    PLANET, 
+    STAR,
+    BLACK_HOLE
+};
+
 class Drawable {
 
 private:
@@ -23,7 +31,7 @@ private:
     GLuint* atmosphere;
     glm::mat3 atmosPos;
     float atmosPosModifier;
-
+    DrawableType type;
     Shape* shape;
     static MatrixStack* stack;
     static GLint* stackBind;
@@ -38,7 +46,7 @@ private:
     static float time;
 
 public:
-    Drawable(Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier);
+    Drawable(DrawableType type, Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier);
 
     static void setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
      GLint* vPosBind, GLint* vNormBind, GLint* vTexCoordsBind, GLint* texTransBind);
@@ -48,6 +56,8 @@ public:
     void translate(glm::vec3 translateBy);
     void scale(glm::vec3 scaleBy);
     void rotate(float angle, glm::vec3 rotateVec);
+
+    DrawableType getType();
 
    	void draw();
 

@@ -42,13 +42,6 @@ public:
                               Shape* starShapes, unsigned int numStarShapes, 
                               GLuint uniformKsTexture, GLuint blackTexture);
 
-   enum class DrawableType 
-   { 
-      ROCK, 
-      PLANET, 
-      STAR
-   };
-
    Drawable randomDrawable(DrawableType type);
 };
 #endif

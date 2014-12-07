@@ -39,33 +39,33 @@ void DrawableRandomizer::initSharedRefs(Shape* rockShapes, unsigned int numRockS
 	DrawableRandomizer::blackTexture = blackTexture;	
 }
 
-Drawable DrawableRandomizer::randomDrawable(DrawableRandomizer::DrawableType type)
+Drawable DrawableRandomizer::randomDrawable(DrawableType type)
 {
 	Shape* shape;
 	GLuint *kd, *ks, *atmos;
 	float rSpeed = 0.0f;
 	switch(type)
 	{
-		case DrawableRandomizer::DrawableType::ROCK:
+		case DrawableType::ROCK:
 			shape = DrawableRandomizer::rockShapes + rand() % DrawableRandomizer::numRockShapes;
 			kd = ks = atmos = rockTextures + rand() % DrawableRandomizer::numRockTextures;
 			break;
-		case DrawableRandomizer::DrawableType::PLANET:
+		case DrawableType::PLANET:
 			shape = DrawableRandomizer::planetShapes + rand() % DrawableRandomizer::numPlanetShapes;
 			kd = planetTextures + rand() % DrawableRandomizer::numPlanetTextures;
 			ks = &blackTexture;
 			atmos = DrawableRandomizer::atmosTextures + rand() % DrawableRandomizer::numAtmosTextures;
 			rSpeed = (!(rand() % 1) ? -1 : 1) * rand() % 10 * 0.00001f;
 			break;
-		case DrawableRandomizer::DrawableType::STAR:
+		case DrawableType::STAR:
 			shape = DrawableRandomizer::planetShapes + rand() % DrawableRandomizer::numPlanetShapes;
 			kd = ks = atmos = planetTextures + rand() % DrawableRandomizer::numPlanetTextures;
 			break;
 		default:
-			fprintf(stderr, "Unknown planet type\n");
+			fprintf(stderr, "Black hole unsupported\n");
 			exit(UNKNOWN_PLANET_TYPE);
 	}
 
-	return Drawable(shape, kd, ks, atmos, rSpeed);
+	return Drawable(type, shape, kd, ks, atmos, rSpeed);
 }
 

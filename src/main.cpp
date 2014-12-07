@@ -49,8 +49,6 @@ bool tree = false;
 bool showNumShapes = false;
 glm::vec3 lightPosCam;
 
-Mass* cameraMass;
-
 // GLSL program
 GLuint pid;
 
@@ -243,8 +241,8 @@ void initGL()
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f);
       mass->setDrawable(getPlanet());
-      cameraMass = mass;
       simulator->addMass(mass);
+      Simulator::setSelectedMass(mass);
    }
 
    //simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
@@ -338,8 +336,9 @@ void drawGL()
          (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
-   glm::vec3 tempPos = cameraMass->getPosition();
-   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
+   Mass cameraMass = simulator->getSelectedMass();
+   glm::vec3 tempPos = cameraMass.getPosition();
+   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass.getRadius();
    camera.setPosition(tempPos);
 
    // Unbind the program
@@ -450,6 +449,9 @@ void keyboardGL(unsigned char key, int x, int y)
          break;
       case 'n':
          showNumShapes = !showNumShapes;
+         break;
+      case 'm':
+         Simulator::nextMass(simulator);
          break;
       default:
          camera.movement(key);

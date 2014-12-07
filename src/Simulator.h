@@ -52,6 +52,7 @@ private:
    pthread_t thread;
    pthread_mutex_t mut;
    thread_arg_t threadArgs;
+   static Mass* selectedMass;
 
 public:
    Simulator();
@@ -59,6 +60,12 @@ public:
    ~Simulator();
 
    std::vector<Mass*> *getMasses();
+
+   static Mass getSelectedMass();
+
+   static void nextMass(Simulator* s);
+
+   static void setSelectedMass(Mass *mass);
 
    void addMass(Mass *mass);
 

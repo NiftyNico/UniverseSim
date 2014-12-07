@@ -43,6 +43,8 @@ static const Octree* getTree(barnes_hut_t *args) {
    return tree;
 }
 
+Mass* Simulator::selectedMass;
+
 void *updateMass(void *p) {
    thread_mass_arg_t *args = (thread_mass_arg_t*) p;
    std::vector<Mass*> *masses = args->masses;
@@ -227,12 +229,13 @@ void *update(void *p) {
                                       p1 * (*i)->getVelocity() + p2 * m->getVelocity(),
                                       m_t,
                                       args->curTime);
-
+            combined->setDrawable((p1 > p2 ? (*i) : m)->getDrawable());
             std::vector<Mass*>::iterator last = i - 1;
             delete *i;
             masses->erase(i);
 
             masses->push_back(combined);
+            Simulator::setSelectedMass(combined);
 
             i = last;
          }
@@ -296,8 +299,20 @@ Simulator::~Simulator() {
    pthread_mutex_destroy(&mut);
 }
 
+Mass Simulator::getSelectedMass() {
+   return *selectedMass;
+}
+
+void Simulator::nextMass(Simulator* s) {
+   selectedMass = s->getMasses()->at(rand() % s->getMasses()->size());
+}
+
 std::vector<Mass*> *Simulator::getMasses() {
    return &masses;
+}
+
+void Simulator::setSelectedMass(Mass *mass) {
+   selectedMass = mass;
 }
 
 void Simulator::addMass(Mass *mass) {

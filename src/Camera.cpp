@@ -28,40 +28,40 @@ Camera::~Camera()
 
 void Camera::mouseClicked(int x, int y, bool shift, bool ctrl, bool alt)
 {
-	mousePrev.x = x;
-	mousePrev.y = y;
-	if(shift) {
-		state = Camera::TRANSLATE;
-	} else if(ctrl) {
-		state = Camera::SCALE;
-	} else {
-		state = Camera::ROTATE;
-	}
+   mousePrev.x = x;
+   mousePrev.y = y;
+   if(shift) {
+      state = Camera::SCALE;
+   } else if(ctrl) {
+      state = Camera::TRANSLATE;
+   } else {
+      state = Camera::ROTATE;
+   }
 }
 
 void Camera::mouseMoved(int x, int y)
 {
-	glm::vec2 mouseCurr(x, y);
-	glm::vec2 dv = mouseCurr - mousePrev;
-	switch(state) {
-		case Camera::ROTATE:
-			rotations += rfactor * dv;
-			break;
-		case Camera::TRANSLATE:
-			translations.x += tfactor * dv.x;
-			translations.y -= tfactor * dv.y;
-			break;
-		case Camera::SCALE:
-			translations.z *= (1.0f - sfactor * dv.y);
-			break;
-	}
-	mousePrev.x = x;
-	mousePrev.y = y;
+   glm::vec2 mouseCurr(x, y);
+   glm::vec2 dv = mouseCurr - mousePrev;
+   switch(state) {
+      case Camera::ROTATE:
+         rotations += rfactor * dv;
+         break;
+      case Camera::TRANSLATE:
+         translations.x += tfactor * dv.x;
+         translations.y -= tfactor * dv.y;
+         break;
+      case Camera::SCALE:
+         translations.z *= (1.0f + sfactor * dv.y);
+         break;
+   }
+   mousePrev.x = x;
+   mousePrev.y = y;
 }
 
 void Camera::movement(char c)
 {
-	switch(c)
+	/*switch(c)
 	{
 		case 'w':
     		translations.z -= MOVE_SPEED;
@@ -81,10 +81,10 @@ void Camera::movement(char c)
 		case 'e':
 		    translations.y += MOVE_SPEED;
 		    break;
-	}
+	}*/
 }
 
-void Camera::passiveMouseMoved(int x, int y)
+/*void Camera::passiveMouseMoved(int x, int y)
 {
 	glm::vec2 mouseCurr(x, y);
 	glm::vec2 dv = mouseCurr - mousePrev;
@@ -93,7 +93,7 @@ void Camera::passiveMouseMoved(int x, int y)
 
 	mousePrev.x = x;
 	mousePrev.y = y;
-}
+}*/
 
 void Camera::applyProjectionMatrix(MatrixStack *P) const
 {

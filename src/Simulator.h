@@ -61,7 +61,7 @@ public:
 
    std::vector<Mass*> *getMasses();
 
-   static Mass getSelectedMass();
+   static Mass* getSelectedMass();
 
    static void nextMass(Simulator* s);
 

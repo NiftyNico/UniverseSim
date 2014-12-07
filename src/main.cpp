@@ -24,7 +24,7 @@
 #define UNDEFINED -1
 #define NUM_PLANETS 100
 #define WINDOW_DIM 800
-#define SKY_BOUNDS 2000
+#define SKY_BOUNDS 200
 
 #define PLANET_POOL_SIZE 100
 
@@ -336,9 +336,9 @@ void drawGL()
          (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
-   Mass cameraMass = simulator->getSelectedMass();
-   glm::vec3 tempPos = cameraMass.getPosition();
-   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass.getRadius();
+   Mass* cameraMass = simulator->getSelectedMass();
+   glm::vec3 tempPos = cameraMass->getPosition();
+   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
    camera.setPosition(tempPos);
 
    // Unbind the program
@@ -416,7 +416,7 @@ void motionGL(int x, int y)
 }
 
 void glutPassiveMotionGL(int x, int y){
-   camera.passiveMouseMoved(x, y);
+   //camera.passiveMouseMoved(x, y);
 }
 
 void keyboardGL(unsigned char key, int x, int y)

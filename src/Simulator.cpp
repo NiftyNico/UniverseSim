@@ -235,7 +235,8 @@ void *update(void *p) {
             masses->erase(i);
 
             masses->push_back(combined);
-            Simulator::setSelectedMass(combined);
+            if (m == Simulator::getSelectedMass())
+               Simulator::setSelectedMass(combined);
 
             i = last;
          }
@@ -299,8 +300,8 @@ Simulator::~Simulator() {
    pthread_mutex_destroy(&mut);
 }
 
-Mass Simulator::getSelectedMass() {
-   return *selectedMass;
+Mass* Simulator::getSelectedMass() {
+   return selectedMass;
 }
 
 void Simulator::nextMass(Simulator* s) {

@@ -381,9 +381,9 @@ void drawGL()
    }
    Mass* cameraMass = simulator->getSelectedMass();
    glm::vec3 tempPos = cameraMass->getPosition();
+   lightPosCam = glm::vec3(MV.topMatrix() * glm::vec4(tempPos, 1.0f));
    tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
    camera.setPosition(tempPos);
-   lightPosCam = tempPos;
 
    // Unbind the program
    glUseProgram(0);

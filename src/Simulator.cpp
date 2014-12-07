@@ -229,14 +229,15 @@ void *update(void *p) {
                                       p1 * (*i)->getVelocity() + p2 * m->getVelocity(),
                                       m_t,
                                       args->curTime);
-            combined->setDrawable((p1 > p2 ? (*i) : m)->getDrawable());
+            combined->setDrawable((p1 > p2 ? *i : m)->getDrawable());
+            if (Simulator::getSelectedMass() == m || Simulator::getSelectedMass() == *i)
+               Simulator::setSelectedMass(combined);
+
             std::vector<Mass*>::iterator last = i - 1;
             delete *i;
             masses->erase(i);
 
             masses->push_back(combined);
-            if (m == Simulator::getSelectedMass())
-               Simulator::setSelectedMass(combined);
 
             i = last;
          }

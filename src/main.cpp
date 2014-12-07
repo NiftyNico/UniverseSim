@@ -28,6 +28,8 @@
 
 #define PLANET_POOL_SIZE 100
 
+#define DISTANCE_FROM_DRAWABLE_MOD 5
+
 #define SHADER_PATH "src/shader/"
 #define OBJ_PATH "res/obj/"
 
@@ -46,6 +48,8 @@ bool line = false;
 bool tree = false;
 bool showNumShapes = false;
 glm::vec3 lightPosCam;
+
+Mass* cameraMass;
 
 // GLSL program
 GLuint pid;
@@ -239,6 +243,7 @@ void initGL()
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f);
       mass->setDrawable(getPlanet());
+      cameraMass = mass;
       simulator->addMass(mass);
    }
 
@@ -333,6 +338,9 @@ void drawGL()
          (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
+   glm::vec3 tempPos = cameraMass->getPosition();
+   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
+   camera.setPosition(tempPos);
 
    // Unbind the program
    glUseProgram(0);

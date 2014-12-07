@@ -6,7 +6,8 @@
 #include <dirent.h>
 #include <glob.h>
 #include "Image.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define BAD_PATH_ERROR 1
 

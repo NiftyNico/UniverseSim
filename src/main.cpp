@@ -30,6 +30,7 @@
 #define MIN_SUN_MASS 100000
 #define MIN_BLACK_HOLE_MASS 1000000
 
+#define MAX_LIGHTS 10
 
 #define MAX_INIT_VELOCITY 2
 
@@ -56,7 +57,7 @@ bool cull = false;
 bool line = false;
 bool tree = false;
 bool showNumShapes = false;
-glm::vec3 lightPosCam;
+glm::vec3 lightPositions[MAX_LIGHTS];
 
 // GLSL program
 GLuint pid;
@@ -71,7 +72,7 @@ GLint h_T;
 GLint h_texture0;
 GLint h_texture1;
 GLint h_texture2;
-GLint h_lightPosCam;
+GLint h_lightPositions;
 
 // OpenGL handle to texture data
 GLuint outershellTexture;
@@ -154,7 +155,6 @@ void loadScene()
    cat.load(getObjPath("cat.obj"));
    rock1.load(getObjPath("rock1.obj"));
    rock2.load(getObjPath("rock2.obj"));
-   lightPosCam = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 void initGL()
@@ -234,7 +234,7 @@ void initGL()
    h_texture0 = GLSL::getUniformLocation(pid, "texture0");
    h_texture1 = GLSL::getUniformLocation(pid, "texture1");
    h_texture2 = GLSL::getUniformLocation(pid, "texture2");
-   h_lightPosCam = GLSL::getUniformLocation(pid, "lightPosCam");
+   h_lightPositions = GLSL::getUniformLocation(pid, "lightPositions");
 
    loadTexture(&outershellTexture, getImgPath("outershell.bmp").c_str());
    loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
@@ -347,11 +347,17 @@ void drawGL()
    MV.pushMatrix();
    camera.applyViewMatrix(&MV);
 
+   Mass* cameraMass = simulator->getSelectedMass();
+   glm::vec3 tempPos = cameraMass->getPosition();
+   lightPositions[0] = glm::vec3(MV.topMatrix() * glm::vec4(tempPos.x, tempPos.y, tempPos.z - 10.0f, 1.0f));
+   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
+   camera.setPosition(tempPos);
+
    // Bind the program
    glUseProgram(pid);
    glUniformMatrix4fv(h_P, 1, GL_FALSE, glm::value_ptr(P.topMatrix()));
    glUniformMatrix4fv(h_MV, 1, GL_FALSE, glm::value_ptr(MV.topMatrix()));
-   glUniform3fv(h_lightPosCam, 1, glm::value_ptr(lightPosCam));
+   glUniform3fv(h_lightPositions, 3 * MAX_LIGHTS * sizeof(GLfloat), (const GLfloat*) lightPositions);
    
    Drawable::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
      &h_vertPosition, &h_vertNormal, &h_vertTexCoords, &h_T);
@@ -379,11 +385,6 @@ void drawGL()
          (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
-   Mass* cameraMass = simulator->getSelectedMass();
-   glm::vec3 tempPos = cameraMass->getPosition();
-   lightPosCam = glm::vec3(MV.topMatrix() * glm::vec4(tempPos, 1.0f));
-   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
-   camera.setPosition(tempPos);
 
    // Unbind the program
    glUseProgram(0);
@@ -478,18 +479,6 @@ void keyboardGL(unsigned char key, int x, int y)
          break;
       case 't':
          tree = !tree;
-         break;
-      case 'x':
-         lightPosCam.x += 0.1;
-         break;
-      case 'X':
-         lightPosCam.x -= 0.1;
-         break;
-      case 'y':
-         lightPosCam.y += 0.1;
-         break;
-      case 'Y':
-         lightPosCam.y -= 0.1;
          break;
       case 'n':
          showNumShapes = !showNumShapes;

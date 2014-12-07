@@ -1,7 +1,7 @@
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
-uniform vec3 lightPosCam;
+uniform vec3 lightPositions[10];
 
 varying vec2 fragTexCoords0;
 varying vec2 fragTexCoords1;
@@ -11,7 +11,7 @@ varying vec3 objPos;
 void main()
 {
 	vec3 n = normalize(normal);
-    vec3 l = normalize(lightPosCam - objPos);
+    vec3 l = normalize(lightPositions[0] - objPos);
     vec3 e = normalize(vec3(0.0, 0.0, 0.0) - objPos);
     vec3 h = normalize(l + e);
 

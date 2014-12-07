@@ -1,6 +1,6 @@
-SOURCES=BoxList.cpp Camera.cpp GLSL.cpp Image.cpp main.cpp Mass.cpp MatrixStack.cpp Octree.cpp Drawable.cpp Shape.cpp Simulator.cpp Texture.cpp tiny_obj_loader.cc
+SOURCES=BoxList.cpp Camera.cpp GLSL.cpp Image.cpp main.cpp Mass.cpp MatrixStack.cpp Octree.cpp Drawable.cpp Shape.cpp Simulator.cpp Texture.cpp DrawableRandomizer.cpp tiny_obj_loader.cc
 SRCFILES=$(addprefix src/, $(SOURCES))
-CCFLAGS=-O3 -ansi -pedantic -Wno-deprecated -g -Wall
+CCFLAGS=-O3 -ansi -pedantic -Wno-deprecated -g -Wall -std=c++0x
 
 all:
 	g++ $(CCFLAGS) $(SRCFILES) -DGL_GLEXT_PROTOTYPES -lglut -lGL -lGLU -o universe -pthread

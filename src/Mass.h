@@ -9,7 +9,7 @@
 #endif
 #include "GLSL.h"
 #include "MatrixStack.h"
-
+#include "Drawable.h"
 #include <pthread.h>
 
 class Mass {
@@ -21,6 +21,7 @@ private:
    glm::vec3 velocity;
    glm::vec3 acceleration;
    int index;
+   Drawable* drawable;
 
 public:
    Mass(glm::vec3 position, float radius);
@@ -46,6 +47,10 @@ public:
    void setIndex(int i);
 
    int getIndex() const;
+
+   void setDrawable(Drawable* d);
+
+   Drawable* getDrawable();
 };
 
 #endif

@@ -7,6 +7,7 @@ Mass::Mass(glm::vec3 position, float radius) {
    this->mass = 4.0 * M_PI * radius * radius * radius / 3.0;
    this->radius = radius;
    curTime = 0.0f;
+   this->drawable = NULL;
 }
 
 Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
@@ -16,6 +17,7 @@ Mass::Mass(glm::vec3 position, glm::vec3 velocity, float mass, float curTime) {
    this->mass = mass;
    this->radius = std::pow(3.0 * mass / (4.0 * M_PI), 1/3.);
    this->curTime = curTime;
+   this->drawable = NULL;
 }
 
 float Mass::getRadius() const {
@@ -61,4 +63,12 @@ void Mass::setIndex(int i) {
 
 int Mass::getIndex() const {
    return index;
+}
+
+void Mass::setDrawable(Drawable* d) {
+   this->drawable = d;
+}
+
+Drawable* Mass::getDrawable() {
+   return drawable;
 }

@@ -224,6 +224,7 @@ void initGL()
 
 	simulator = new Simulator();
 
+	srand(time(NULL));
 	//Create planets
 	for (int i = 0; i < NUM_PLANETS; i++) {
 		simulator->addMass(new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
@@ -231,7 +232,7 @@ void initGL()
 		 	               	                 rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 1 + (rand() % 100) / 10.0f));
 	}
 
-	simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
+	// simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
 	thePlane = new Drawable(&plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
 	thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));

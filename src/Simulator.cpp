@@ -4,7 +4,7 @@
 #include <limits>
 #include <algorithm>
 
-#define G 6.67384E-2//11
+#define G 6.67384E-4//11
 #define THETA 0.5
 
 static time_t firstTime = 0;

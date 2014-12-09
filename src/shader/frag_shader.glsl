@@ -16,12 +16,12 @@ void main()
 	vec3 kd = texture2D(texture0, fragTexCoords0).rgb;
 	vec3 atmosKd = texture2D(texture2, fragTexCoords1).rgb;
 	vec4 theColor = vec4(0.0, 0.0, 0.0, 0.0);
+
 	if (isSun != 0) {
 		theColor = vec4(kd + atmosKd, 1.0);		
 	} else {			
 		vec3 n = normalize(normal);
 		int i;
-		vec4 maxColor = vec4(kd + atmosKd, 1.0);
 		for(i = 0; i < numLights; i++) {
 	    	vec3 l = normalize(lightPositions[i] - objPos);
 		    vec3 e = normalize(vec3(0.0, 0.0, 0.0) - objPos);
@@ -38,7 +38,7 @@ void main()
 			vec4 atmosColor = vec4(atmosKd, 1.0) * lighting;
 			vec4 mainColor = vec4(kd, 1.0) * lighting + vec4(ks, 1.0) * pow(max(dot(h, n), 0.0), 20.0);
 
-			theColor = min(maxColor, theColor + atmosColor + mainColor);
+			theColor += (atmosColor + mainColor) / numLights;
 		}
 	}
 

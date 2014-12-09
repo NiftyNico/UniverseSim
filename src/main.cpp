@@ -27,10 +27,10 @@
 #define SKY_BOUNDS 200
 
 #define MIN_PLANET_MASS 1000.0f
-#define MIN_SUN_MASS 5000.0f
+#define MIN_SUN_MASS 3000.0f
 #define MIN_BLACK_HOLE_MASS 10000.0f
 
-#define LIGHT_DISTANCE_MODIFIER 0.0005f
+#define LIGHT_DISTANCE_MODIFIER 10.0f
 #define MAX_LIGHTS 100
 
 #define MAX_INIT_VELOCITY 2
@@ -412,7 +412,6 @@ void drawGL()
 
          toDraw = (*it)->getDrawable();
          if(toDraw->getType() == DrawableType::STAR && numLights < MAX_LIGHTS){
-            printf("light at x: %f, y: %f, z: %f\n", (*it)->getPosition().x, (*it)->getPosition().y, (*it)->getPosition().z);
             lightPositions[numLights++] = (*it)->getPosition();            
          }
       //}

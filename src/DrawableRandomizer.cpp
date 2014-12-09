@@ -45,7 +45,8 @@ Drawable DrawableRandomizer::randomDrawable(DrawableType type)
 	{
 		case DrawableType::ROCK:
 			shape = DrawableRandomizer::rockShapes + rand() % DrawableRandomizer::numRockShapes;
-			kd = ks = atmos = rockTextures + rand() % DrawableRandomizer::numRockTextures;
+			kd = rockTextures + rand() % DrawableRandomizer::numRockTextures;
+			ks = atmos = &blackTexture;
 			break;
 		case DrawableType::PLANET:
 			shape = DrawableRandomizer::planetShapes + rand() % DrawableRandomizer::numPlanetShapes;
@@ -55,8 +56,8 @@ Drawable DrawableRandomizer::randomDrawable(DrawableType type)
 			rSpeed = (!(rand() % 1) ? -1 : 1) * rand() % 10 * 0.00001f;
 			break;
 		case DrawableType::STAR:
-			shape = DrawableRandomizer::planetShapes + rand() % DrawableRandomizer::numPlanetShapes;
-			kd = ks = atmos = planetTextures + rand() % DrawableRandomizer::numPlanetTextures;
+			shape = DrawableRandomizer::starShapes + rand() % DrawableRandomizer::numPlanetShapes;
+			kd = ks = atmos = starTextures + rand() % DrawableRandomizer::numPlanetTextures;
 			break;
 		default:
 			fprintf(stderr, "Black hole unsupported\n");

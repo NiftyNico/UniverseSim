@@ -13,6 +13,9 @@
 #include "Camera.h"
 #include "Shape.h"
 
+#define NO_LIGHT -1
+#define SECOND 1000
+
 enum class DrawableType 
 { 
     ROCK, 
@@ -33,6 +36,11 @@ private:
     float atmosPosModifier;
     DrawableType type;
     Shape* shape;
+    int lightIndex;
+
+    float rotationSpeed;
+    glm::vec3 rotationVec;
+
     static MatrixStack* stack;
     static GLint* stackBind;
     static GLint* colorBind;
@@ -58,6 +66,12 @@ public:
     void rotate(float angle, glm::vec3 rotateVec);
 
     DrawableType getType();
+
+    int getLightIndex();
+
+    int setLightIndex(int newIndex);
+
+    void removeLightIndex();
 
    	void draw();
 

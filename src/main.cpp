@@ -22,15 +22,16 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_PLANETS 100
+#define NUM_DRAWABLES 100
 #define WINDOW_DIM 800
 #define SKY_BOUNDS 200
 
-#define MIN_PLANET_MASS 5000
-#define MIN_SUN_MASS 100000
-#define MIN_BLACK_HOLE_MASS 1000000
+#define MIN_PLANET_MASS 1000.0f
+#define MIN_SUN_MASS 5000.0f
+#define MIN_BLACK_HOLE_MASS 10000.0f
 
-#define MAX_LIGHTS 10
+#define LIGHT_DISTANCE_MODIFIER 5.0f
+#define MAX_LIGHTS 100
 
 #define MAX_INIT_VELOCITY 2
 
@@ -57,11 +58,12 @@ bool cull = false;
 bool line = false;
 bool tree = false;
 bool showNumShapes = false;
+
+bool showAll = false;
 glm::vec3 lightPositions[MAX_LIGHTS];
-GLint numLights = 1;
 
 // GLSL program
-GLuint pid;
+GLuint regPid;
 
 // GLSL handles to various parameters in the shaders
 GLint h_vertPosition;
@@ -75,6 +77,8 @@ GLint h_texture1;
 GLint h_texture2;
 GLint h_lightPositions;
 GLint h_numLights;
+GLint h_lightDistanceModifier;
+GLint h_isSun;
 
 // OpenGL handle to texture data
 GLuint outershellTexture;
@@ -96,8 +100,8 @@ Drawable *catDrawable;
 Drawable *rock1Drawable;
 Drawable *rock2Drawable;
 
-Drawable* thePlane;
-Drawable* blackHole;
+Drawable *thePlane;
+Drawable *blackHole;
 Simulator *simulator;
 
 string getShaderPath(string filename)
@@ -159,6 +163,35 @@ void loadScene()
    rock2.load(getObjPath("rock2.obj"));
 }
 
+Drawable* getDrawableFromMass(Mass* mass)
+{
+   Drawable* ret = getRock();
+   if(mass->getMass() >= MIN_PLANET_MASS) {
+      ret = getPlanet();
+   } if(mass->getMass() >= MIN_SUN_MASS) {
+      ret = getStar();
+   } if (mass->getMass() >= MIN_BLACK_HOLE_MASS) {
+      ret = blackHole;
+   }
+
+   return ret;  
+}
+
+void updateMassDrawable(Mass* mass)
+{
+   Drawable *mDrawable = mass->getDrawable(),
+            *nDrawable = getDrawableFromMass(mass);
+
+   if(!mDrawable) {
+      mass->setDrawable(nDrawable);
+      return;
+   }
+   if(mDrawable->getType() == nDrawable->getType())
+      return;
+
+   mass->setDrawable(nDrawable);
+}
+
 void initGL()
 {
    //////////////////////////////////////////////////////
@@ -216,28 +249,30 @@ void initGL()
    }
    
    // Create the program and link
-   pid = glCreateProgram();
-   glAttachShader(pid, VS);
-   glAttachShader(pid, FS);
-   glLinkProgram(pid);
+   regPid = glCreateProgram();
+   glAttachShader(regPid, VS);
+   glAttachShader(regPid, FS);
+   glLinkProgram(regPid);
    GLSL::printError();
-   glGetProgramiv(pid, GL_LINK_STATUS, &rc);
-   GLSL::printProgramInfoLog(pid);
+   glGetProgramiv(regPid, GL_LINK_STATUS, &rc);
+   GLSL::printProgramInfoLog(regPid);
    if(!rc) {
       printf("Error linking shaders %s and %s\n", vShaderName.c_str(), fShaderName.c_str());
    }
    
-   h_vertPosition = GLSL::getAttribLocation(pid, "vertPosition");
-   h_vertNormal = GLSL::getAttribLocation(pid, "vertNormal");
-   h_vertTexCoords = GLSL::getAttribLocation(pid, "vertTexCoords");
-   h_P = GLSL::getUniformLocation(pid, "P");
-   h_MV = GLSL::getUniformLocation(pid, "MV");
-   h_T = GLSL::getUniformLocation(pid, "T");
-   h_texture0 = GLSL::getUniformLocation(pid, "texture0");
-   h_texture1 = GLSL::getUniformLocation(pid, "texture1");
-   h_texture2 = GLSL::getUniformLocation(pid, "texture2");
-   h_lightPositions = GLSL::getUniformLocation(pid, "lightPositions");
-   h_numLights = GLSL::getUniformLocation(pid, "numLights");;
+   h_vertPosition = GLSL::getAttribLocation(regPid, "vertPosition");
+   h_vertNormal = GLSL::getAttribLocation(regPid, "vertNormal");
+   h_vertTexCoords = GLSL::getAttribLocation(regPid, "vertTexCoords");
+   h_P = GLSL::getUniformLocation(regPid, "P");
+   h_MV = GLSL::getUniformLocation(regPid, "MV");
+   h_T = GLSL::getUniformLocation(regPid, "T");
+   h_texture0 = GLSL::getUniformLocation(regPid, "texture0");
+   h_texture1 = GLSL::getUniformLocation(regPid, "texture1");
+   h_texture2 = GLSL::getUniformLocation(regPid, "texture2");
+   h_lightPositions = GLSL::getUniformLocation(regPid, "lightPositions");
+   h_numLights = GLSL::getUniformLocation(regPid, "numLights");
+   h_lightDistanceModifier = GLSL::getUniformLocation(regPid, "lightDistanceModifier");
+   h_isSun = GLSL::getUniformLocation(regPid, "isSun");
 
    loadTexture(&outershellTexture, getImgPath("outershell.bmp").c_str());
    loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
@@ -262,6 +297,8 @@ void initGL()
    for(int i = 0; i < STAR_POOL_SIZE; i++)
       starPool[i] = dRandomizer->randomDrawable(DrawableType::STAR);
 
+   blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &blackTexture, &blackTexture, &blackTexture, 0.0f);
+
    // Check GLSL
    GLSL::checkVersion();
 
@@ -269,7 +306,7 @@ void initGL()
 
    //Create planets
    srand(time(NULL));
-   for (int i = 0; i < NUM_PLANETS; i++) {
+   for (int i = 0; i < NUM_DRAWABLES; i++) {
       Mass* mass = new Mass(glm::vec3(rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2, 
                                       rand() % SKY_BOUNDS - SKY_BOUNDS / 2), 
@@ -277,23 +314,18 @@ void initGL()
                                       rand() % MAX_INIT_VELOCITY, 
                                       rand() % MAX_INIT_VELOCITY),*/
                             1 + (rand() % 100) / 10.0f);
-      mass->setDrawable(getRock());
+      
+      updateMassDrawable(mass);
+
       simulator->addMass(mass);
       Simulator::setSelectedMass(mass);
    }
-
-   //simulator->addMass(new Mass(glm::vec3(11.0f, 0.0f, 11.0f), 10));
 
    thePlane = new Drawable(DrawableType::ROCK, &plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
    thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
    thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
    thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
-   dRandomizer->randomDrawable(DrawableType::PLANET);
-   //planetDrawable = new Drawable(DrawableType::PLANET, &planet, &blackTexture, &blackTexture, &blackTexture, 0.00005f);
-   //catDrawable = new Drawable(&cat, &flowerTexture, &flowerTexture, &earthCloudsTexture, 0.00005f);
-   //rock1Drawable = new Drawable(&rock1, &rock1KdTexture, &rock1KdTexture, &rock1KdTexture, 0.0f);
-   //rock2Drawable = new Drawable(&rock2, &rock2KdTexture, &rock2KdTexture, &rock2KdTexture, 0.0f);
-   blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &blackTexture, &blackTexture, &blackTexture, 0.0f);
+
    simulator->start();
 }
 
@@ -352,17 +384,16 @@ void drawGL()
 
    Mass* cameraMass = simulator->getSelectedMass();
    glm::vec3 tempPos = cameraMass->getPosition();
-   lightPositions[0] = glm::vec3(MV.topMatrix() * glm::vec4(tempPos.x, tempPos.y, tempPos.z - 10.0f, 1.0f));
    tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
    camera.setPosition(tempPos);
 
    // Bind the program
-   glUseProgram(pid);
+   glUseProgram(regPid);
    glUniformMatrix4fv(h_P, 1, GL_FALSE, glm::value_ptr(P.topMatrix()));
    glUniformMatrix4fv(h_MV, 1, GL_FALSE, glm::value_ptr(MV.topMatrix()));
    glUniform3fv(h_lightPositions, 3 * MAX_LIGHTS * sizeof(GLfloat), (const GLfloat*) lightPositions);
-   glUniform1i(h_numLights, numLights);
-   
+   glUniform1f(h_lightDistanceModifier, LIGHT_DISTANCE_MODIFIER);
+   glUniform1i(h_isSun, 0);   
    Drawable::setup(&MV, &h_MV, &h_texture0, &h_texture1, &h_texture2, 
      &h_vertPosition, &h_vertNormal, &h_vertTexCoords, &h_T);
 
@@ -372,21 +403,31 @@ void drawGL()
    camera.calcNormal();
    std::vector<Mass*> *masses = simulator->getMasses();
    BoxNode *boxes = simulator->getOctree();
+
+   Drawable* toDraw;
+   GLint numLights = 0;
    for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
       if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-         Drawable* toDraw = (*it)->getDrawable();
-         DrawableType type = toDraw->getType();
-         /*if(!(*it)->getDrawable())
-            (*it)->setDrawable(getPlanet());*/
-         if(type == DrawableType::ROCK && (*it)->getMass() >= MIN_PLANET_MASS)
-            (*it)->setDrawable(getPlanet());
-         if(type == DrawableType::PLANET && (*it)->getMass() >= MIN_SUN_MASS)
-            (*it)->setDrawable(getStar());
-         if(type == DrawableType::STAR && (*it)->getMass() >= MIN_BLACK_HOLE_MASS)
-            (*it)->setDrawable(blackHole);
+         updateMassDrawable((*it));
 
-         //getPlanet()->draw((*it)->getPosition(), (*it)->getRadius());
-         (*it)->getDrawable()->draw((*it)->getPosition(), (*it)->getRadius());
+         toDraw = (*it)->getDrawable();
+         if(toDraw->getType() == DrawableType::STAR && numLights < MAX_LIGHTS){
+            printf("light at x: %f, y: %f, z: %f\n", (*it)->getPosition().x, (*it)->getPosition().y, (*it)->getPosition().z);
+            lightPositions[numLights++] = (*it)->getPosition();            
+         }
+      }
+   }
+   printf("%d\n", numLights);
+   glUniform1i(h_numLights, numLights);
+
+   for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
+      if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
+         toDraw = (*it)->getDrawable();
+
+         int shouldHighlight = toDraw->getType() == DrawableType::STAR || showAll ? 1 : 0;
+         glUniform1i(h_isSun, shouldHighlight);
+
+         toDraw->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
 
@@ -469,7 +510,7 @@ void glutPassiveMotionGL(int x, int y){
 }
 
 void keyboardGL(unsigned char key, int x, int y)
-{
+{    
    switch(key) {
       case 27:
          // ESCAPE
@@ -489,6 +530,9 @@ void keyboardGL(unsigned char key, int x, int y)
          break;
       case 'm':
          Simulator::nextMass(simulator);
+         break;
+      case 'b':
+         showAll = !showAll;
          break;
       default:
          camera.movement(key);

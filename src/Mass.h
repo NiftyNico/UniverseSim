@@ -50,7 +50,7 @@ public:
 
    int getIndex() const;
 
-   void setDrawable(Drawable* d);
+   Drawable* setDrawable(Drawable* d);
 
    Drawable* getDrawable();
 };

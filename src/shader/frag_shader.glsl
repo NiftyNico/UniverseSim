@@ -39,7 +39,7 @@ void main()
 			vec4 mainColor = vec4(kd, 1.0) * lighting + vec4(ks, 1.0) * pow(max(dot(h, n), 0.0), 20.0);
 
 			vec4 newColor = atmosColor + mainColor;
-			theColor += vec4(newColor.r / numLights, newColor.g / numLights, newColor.b / numLights, newColor.a / numLights);
+			theColor += newColor / float(numLights);
 		}
 	}
 

@@ -22,15 +22,15 @@
 #include "glm/gtx/string_cast.hpp"
 
 #define UNDEFINED -1
-#define NUM_DRAWABLES 100
-#define WINDOW_DIM 800
-#define SKY_BOUNDS 200
+#define NUM_DRAWABLES 35000
+#define WINDOW_DIM 1200
+#define SKY_BOUNDS 2000
 
-#define MIN_PLANET_MASS 1000.0f
-#define MIN_SUN_MASS 3000.0f
-#define MIN_BLACK_HOLE_MASS 10000.0f
+#define MIN_PLANET_MASS 5000.0f
+#define MIN_SUN_MASS 50000.0f
+#define MIN_BLACK_HOLE_MASS 250000.0f
 
-#define LIGHT_DISTANCE_MODIFIER 1000.0f
+#define LIGHT_DISTANCE_MODIFIER 5000.0f
 #define MAX_LIGHTS 100
 
 #define MAX_INIT_VELOCITY 2
@@ -39,7 +39,7 @@
 #define PLANET_POOL_SIZE 100
 #define STAR_POOL_SIZE 100
 
-#define DISTANCE_FROM_DRAWABLE_MOD 5
+#define DISTANCE_FROM_DRAWABLE_MOD 2.5
 
 #define SHADER_PATH "src/shader/"
 #define OBJ_PATH "res/obj/"
@@ -322,7 +322,7 @@ void initGL()
       Simulator::setSelectedMass(mass);
    }
 
-   thePlane = new Drawable(DrawableType::ROCK, &plane, &outershellTexture, &outershellTexture, &outershellTexture, 0.0f);
+   thePlane = new Drawable(DrawableType::ROCK, &plane, &blackTexture, &blackTexture, &blackTexture, 0.0f);
    thePlane->rotate(PI / 2, glm::vec3(0.0f, 1.0f, 0.0f));
    thePlane->translate(glm::vec3(0.0f, -0.5f, 0.0f));
    thePlane->scale(glm::vec3(SKY_BOUNDS * 2, SKY_BOUNDS * 2, SKY_BOUNDS * 2));
@@ -412,17 +412,19 @@ void drawGL()
 
    Drawable* toDraw;
    GLint numLights = 0;
-   for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
-      //if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
-         updateMassDrawable((*it));
+   if (! showAll) {
+      for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
+         if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
+            updateMassDrawable((*it));
 
-         toDraw = (*it)->getDrawable();
-         if(toDraw->getType() == DrawableType::STAR && numLights < MAX_LIGHTS){
-            lightPositions[numLights++] = (*it)->getPosition();            
+            toDraw = (*it)->getDrawable();
+            if(toDraw->getType() == DrawableType::STAR && numLights < MAX_LIGHTS){
+               lightPositions[numLights++] = (*it)->getPosition();            
+            }
          }
-      //}
+      }
+      glUniform1i(h_numLights, numLights);
    }
-   glUniform1i(h_numLights, numLights);
 
    for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
       if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {

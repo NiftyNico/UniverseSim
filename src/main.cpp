@@ -297,7 +297,7 @@ void initGL()
    for(int i = 0; i < STAR_POOL_SIZE; i++)
       starPool[i] = dRandomizer->randomDrawable(DrawableType::STAR);
 
-   blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &blackTexture, &blackTexture, &blackTexture, 0.0f);
+   blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &outershellTexture, &blackTexture, &blackTexture, 0.0f);
 
    // Check GLSL
    GLSL::checkVersion();

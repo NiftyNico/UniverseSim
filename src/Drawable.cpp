@@ -11,6 +11,10 @@ GLint* Drawable::vTexCoordsBind;
 GLint* Drawable::texTransBind;
 float Drawable::time;
 
+float maxOne() {
+   return (float) (rand() % SECOND) / 1000.0f;
+}
+
 Drawable::Drawable(DrawableType type, Shape* shape, GLuint* coloring, GLuint* reflectivity, GLuint* atmosphere, float atmosPosModifier) {
     Drawable::shape = shape;
     Drawable::coloring = coloring;
@@ -33,6 +37,9 @@ Drawable::Drawable(DrawableType type, Shape* shape, GLuint* coloring, GLuint* re
     atmosPos[2][0] = 0.0f;
     atmosPos[2][1] = 0.0f;
     atmosPos[2][2] = 1.0f;
+
+    Drawable::rotationSpeed = (float)(rand() % SECOND) / (SECOND * SECOND * 1.0f);
+    Drawable::rotationVec = glm::vec3(maxOne(), maxOne(), maxOne());
 }
 
 void Drawable::setup(MatrixStack* stack, GLint* stackBind, GLint* colorBind, GLint* reflectBind, GLint* atmosBind, 
@@ -121,7 +128,7 @@ void Drawable::draw() {
 void Drawable::draw(glm::vec3 pos, float r) {
     stack->pushMatrix();
     stack->translate(pos);
-    stack->rotate(0.00001f * time, glm::vec3(0.0f, 1.0f, 0.0f));
+    stack->rotate(rotationSpeed * time, rotationVec);
 
     stack->scale(glm::vec3(r));
 

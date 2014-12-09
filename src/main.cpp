@@ -416,7 +416,6 @@ void drawGL()
          }
       //}
    }
-   printf("%d\n", numLights);
    glUniform1i(h_numLights, numLights);
 
    for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {

@@ -14,6 +14,7 @@
 #include "Shape.h"
 
 #define NO_LIGHT -1
+#define SECOND 1000
 
 enum class DrawableType 
 { 
@@ -36,6 +37,9 @@ private:
     DrawableType type;
     Shape* shape;
     int lightIndex;
+
+    float rotationSpeed;
+    glm::vec3 rotationVec;
 
     static MatrixStack* stack;
     static GLint* stackBind;

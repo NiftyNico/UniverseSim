@@ -18,6 +18,7 @@ Drawable::Drawable(DrawableType type, Shape* shape, GLuint* coloring, GLuint* re
     Drawable::atmosphere = atmosphere;
     Drawable::atmosPosModifier = atmosPosModifier;
     Drawable::type = type;
+    Drawable::lightIndex = NO_LIGHT;
     transpose[0][0] = 1;
     transpose[1][1] = 1;
     transpose[2][2] = 1;
@@ -66,6 +67,18 @@ void Drawable::scale(glm::vec3 scaleVec) {
 
 DrawableType Drawable::getType() {
     return type;
+}
+
+int Drawable::getLightIndex() {
+    return this->lightIndex;
+}
+
+int Drawable::setLightIndex(int newIndex) {
+    return (this->lightIndex = newIndex);
+}
+
+void Drawable::removeLightIndex() {
+    this->lightIndex = NO_LIGHT;
 }
 
 

@@ -75,8 +75,8 @@ int Mass::getIndex() const {
    return index;
 }
 
-void Mass::setDrawable(Drawable* d) {
-   this->drawable = d;
+Drawable* Mass::setDrawable(Drawable* d) {
+   return (this->drawable = d);
 }
 
 Drawable* Mass::getDrawable() {

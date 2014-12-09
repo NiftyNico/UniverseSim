@@ -60,8 +60,9 @@ bool tree = false;
 bool showNumShapes = false;
 
 bool showAll = false;
-glm::vec3 lightPositions[MAX_LIGHTS];
-
+glm::vec3 lightPositions[MAX_LIGHTS];\
+bool isOView = true;
+glm::vec3 oView = glm::vec3(0.0f, 0.0f, SKY_BOUNDS / 1.1f);
 // GLSL program
 GLuint regPid;
 
@@ -383,9 +384,14 @@ void drawGL()
    camera.applyViewMatrix(&MV);
 
    Mass* cameraMass = simulator->getSelectedMass();
-   glm::vec3 tempPos = cameraMass->getPosition();
-   tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
-   camera.setPosition(tempPos);
+   if(!isOView) {
+      glm::vec3 tempPos = cameraMass->getPosition();
+      tempPos.z += DISTANCE_FROM_DRAWABLE_MOD * cameraMass->getRadius();
+      camera.setPosition(tempPos);      
+   } else {
+      camera.setPosition(oView);
+   }
+
 
    // Bind the program
    glUseProgram(regPid);
@@ -531,6 +537,9 @@ void keyboardGL(unsigned char key, int x, int y)
          break;
       case 'b':
          showAll = !showAll;
+         break;
+      case 'o':
+         isOView = !isOView;
          break;
       default:
          camera.movement(key);

@@ -34,7 +34,7 @@ void main()
 			float lighting = lightingMod * max(dot(l, n), 0.0);
 
 			vec4 atmosColor = vec4(atmosKd, 1.0);
-			vec4 mainColor = vec4(kd, 1.0) + vec4(ks, 1.0) * pow(max(dot(h, n), 0.0), 20.0);
+			vec4 mainColor = vec4(kd, 1.0);// + vec4(ks, 1.0) * pow(max(dot(h, n), 0.0), 10.0);
 			vec4 newColor = (atmosColor + mainColor) * lighting;
 			theColor += newColor / float(numLights);
 		}

@@ -30,7 +30,7 @@
 #define MIN_SUN_MASS 5000.0f
 #define MIN_BLACK_HOLE_MASS 10000.0f
 
-#define LIGHT_DISTANCE_MODIFIER 5.0f
+#define LIGHT_DISTANCE_MODIFIER 0.0005f
 #define MAX_LIGHTS 100
 
 #define MAX_INIT_VELOCITY 2
@@ -407,7 +407,7 @@ void drawGL()
    Drawable* toDraw;
    GLint numLights = 0;
    for (std::vector<Mass*>::iterator it = masses->begin(); it != masses->end(); ++it) {
-      if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
+      //if (camera.inView((*it)->getPosition(), (*it)->getRadius())) {
          updateMassDrawable((*it));
 
          toDraw = (*it)->getDrawable();
@@ -415,7 +415,7 @@ void drawGL()
             printf("light at x: %f, y: %f, z: %f\n", (*it)->getPosition().x, (*it)->getPosition().y, (*it)->getPosition().z);
             lightPositions[numLights++] = (*it)->getPosition();            
          }
-      }
+      //}
    }
    printf("%d\n", numLights);
    glUniform1i(h_numLights, numLights);

@@ -30,7 +30,9 @@ void main()
 			vec3 ks = texture2D(texture1, fragTexCoords0).rgb;
 
 			float distL = abs(distance(objPos, l));
-			float lightingMod = 1.5 / (1.5 + 0.2 * distL + lightDistanceModifier * pow(distL, 2.0));
+			float lightingMod = //1.0 / (1.5 + 0.2 * distL + lightDistanceModifier * pow(distL, 2.0));
+			 distL / lightDistanceModifier;
+			lightingMod = min(1.0, lightingMod);
 			float lighting = lightingMod * max(dot(l, n), 0.0);
 
 			vec4 atmosColor = vec4(atmosKd, 1.0) * lighting;

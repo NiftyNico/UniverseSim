@@ -60,7 +60,7 @@ bool tree = false;
 bool showNumShapes = false;
 
 bool showAll = false;
-glm::vec3 lightPositions[MAX_LIGHTS];\
+glm::vec3 lightPositions[MAX_LIGHTS];
 bool isOView = true;
 glm::vec3 oView = glm::vec3(0.0f, 0.0f, SKY_BOUNDS / 1.1f);
 // GLSL program

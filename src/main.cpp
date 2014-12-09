@@ -63,6 +63,9 @@ bool showAll = false;
 glm::vec3 lightPositions[MAX_LIGHTS];
 bool isOView = true;
 glm::vec3 oView = glm::vec3(0.0f, 0.0f, SKY_BOUNDS / 1.1f);
+
+bool isSueda = false;
+Drawable* suedaPlanet;
 // GLSL program
 GLuint regPid;
 
@@ -86,6 +89,7 @@ GLuint outershellTexture;
 GLuint flowerTexture;
 GLuint uniformKsTexture;
 GLuint blackTexture;
+GLuint suedaTexture;
 
 // Texture matrix
 glm::mat3 T(1.0);
@@ -279,7 +283,8 @@ void initGL()
    loadTexture(&flowerTexture, getImgPath("flower.bmp").c_str());
    loadTexture(&uniformKsTexture, getImgPath("uniformKs.bmp").c_str());
    loadTexture(&blackTexture, getImgPath("black.bmp").c_str());
-   
+   loadTexture(&suedaTexture, getImgPath("planets/sueda.bmp").c_str());
+
    DrawableRandomizer::initSharedRefs(&rock1, 1,
                                       &planet, 1, 
                                       &planet, 1, 
@@ -299,7 +304,7 @@ void initGL()
       starPool[i] = dRandomizer->randomDrawable(DrawableType::STAR);
 
    blackHole = new Drawable(DrawableType::BLACK_HOLE, &planet, &outershellTexture, &blackTexture, &blackTexture, 0.0f);
-
+   suedaPlanet = new Drawable(DrawableType::PLANET, &planet, &suedaTexture, &suedaTexture, &suedaTexture, 0.0f);
    // Check GLSL
    GLSL::checkVersion();
 
@@ -433,6 +438,8 @@ void drawGL()
          int shouldHighlight = toDraw->getType() == DrawableType::STAR || showAll ? 1 : 0;
          glUniform1i(h_isSun, shouldHighlight);
 
+         if (isSueda)
+            toDraw = suedaPlanet;
          toDraw->draw((*it)->getPosition(), (*it)->getRadius());
       }
    }
@@ -542,6 +549,9 @@ void keyboardGL(unsigned char key, int x, int y)
          break;
       case 'o':
          isOView = !isOView;
+         break;
+      case 's':
+         isSueda = !isSueda;
          break;
       default:
          camera.movement(key);
